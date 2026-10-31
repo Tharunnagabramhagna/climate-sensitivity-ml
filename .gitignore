@@ -1,0 +1,24 @@
+# Python virtual environments
+test_env/
+venv/
+.venv/
+env/
+backup_baseline/
+
+# Bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Matplotlib cache files
+fontlist-*.json
+**/fontlist-*.json
+
+# OS and Editor temporary files
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak

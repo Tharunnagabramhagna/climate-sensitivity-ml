@@ -1,0 +1,7 @@
+Model,Protocol,Evaluation_Window,RMSE_degC,MAE_degC,R2_Score,Mean_Residual_degC,Std_Residual_degC,Max_Abs_Error_degC
+Ridge Regression (alpha=0.01),Protocol A (1-Step Teacher-Forced),2016-01 to 2025-12 (120 Mo),0.1124,0.0897,0.6532,0.031,0.1085,0.3552
+Ridge Regression (alpha=0.01),Protocol B (10-Yr Recursive Rollout),2016-01 to 2025-12 (120 Mo),0.1754,0.1316,0.1555,0.0898,0.1513,0.5267
+Naive Persistence (Lag-1),Protocol A (1-Step Teacher-Forced),2016-01 to 2025-12 (120 Mo),0.1179,0.0941,0.6186,-0.0009,0.1184,0.29
+Naive Persistence (Lag-1),Protocol B (10-Yr Recursive Rollout),2016-01 to 2025-12 (120 Mo),0.2453,0.2144,-0.6517,-0.1541,0.1917,0.53
+Seasonal Persistence (Lag-12),Protocol A (1-Step Teacher-Forced),2016-01 to 2025-12 (120 Mo),0.2082,0.1597,-0.1898,0.0295,0.207,0.67
+Seasonal Persistence (Lag-12),Protocol B (10-Yr Recursive Rollout),2016-01 to 2025-12 (120 Mo),0.2485,0.2004,-0.6951,0.1176,0.2198,0.64

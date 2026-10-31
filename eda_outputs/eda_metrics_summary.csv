@@ -1,0 +1,7 @@
+Specification,Pearson_r,Spearman_rho
+Raw Level: CO2 vs Temp Anomaly,0.9277506095868906,0.9227097379066906
+Radiative Forcing Proxy: ln(CO2) vs Temp Anomaly,0.925300184980505,0.9227097379066906
+1-Month Difference: Delta CO2 vs Delta Temp,-0.021791534337982983,-0.025554642482318944
+12-Month Difference (YoY): Delta_12 CO2 vs Delta_12 Temp,0.1445759827827119,0.12860870360218551
+Linearly Detrended: Residual CO2 vs Residual Temp,0.44526491212432323,0.3775714883812591
+Quadratic Detrended: Residual CO2 vs Residual Temp,0.1450872628384513,0.13305468430997602
