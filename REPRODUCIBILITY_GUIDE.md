@@ -19,8 +19,8 @@
 
 #### Step 2.1: Open Terminal / Shell
 Navigate to the root directory of the project:
-```bash
-cd c:\Users\bharg\OneDrive\Desktop\ml_model
+```powershell
+cd c:\climate_sensitivity_ml
 ```
 
 #### Step 2.2: Create and Activate an Isolated Virtual Environment
@@ -38,30 +38,72 @@ source test_env/bin/activate
 
 #### Step 2.3: Install Pinned Dependencies
 Install all verified package versions using `requirements.txt`:
-```bash
+```powershell
 pip install -r requirements.txt
 ```
 
 Verify installed versions match expectations:
-```bash
+```powershell
 python -c "import numpy, pandas, scipy, sklearn, xgboost, matplotlib, joblib, pytest; print('All dependencies imported successfully!')"
 ```
 
 ---
 
-### 3. Step-by-Step Execution Workflow
+### 3. Unified End-to-End Execution Workflow (`main.py`)
 
-To reproduce the entire scientific trajectory from scratch, execute the following four commands in sequence:
+The project provides a unified command-line interface (`main.py`) to execute all research stages or reproduce the entire project with a single command:
+
+```powershell
+# Execute the complete end-to-end workflow in sequence:
+python main.py --all
+```
+
+This master workflow executes all 5 stages sequentially:
+1. `Pipeline`: Model fitting, dual-protocol evaluation, artifact serialization (`run_pipeline.py`)
+2. `Predict`: 2026 conditional forecasts under observed CO₂ forcing and recursive rollout intervals (`predict.py`)
+3. `Simulate`: DOECLIM 1D ocean heat diffusion physical simulation under 2×CO₂ (`simulate_hector_2xco2.py`)
+4. `Graphs`: Master generation of all 28 project visualizations across 34 files (`generate_all_graphs.py`)
+5. `Test`: Automated test suite with 27 unit, physics, and CLI test cases (`pytest -v tests/`)
+
+Upon completion, `main.py --all` prints a consolidated execution summary table with elapsed timings and completion status.
+
+---
+
+### 4. Modular Stage-by-Stage Execution
+
+If you prefer to run individual components independently:
 
 ```mermaid
 flowchart TD
-    S1["1. python run_pipeline.py\n(Train, Validate, Dual-Protocol Evaluation, Serialize)"]
-    S2["2. python predict.py\n(Load Joblib Bundle, 2026 Forecasts & Uncertainty)"]
-    S3["3. python simulate_hector_2xco2.py\n(Energy Balance Check, 500-Yr SCM & 5k Ensemble)"]
-    S4["4. pytest -v tests/\n(21 Automated Verification Tests)"]
+    S1["1. python main.py --pipeline\n(Train, Validate, Dual-Protocol Evaluation, Serialize)"]
+    S2["2. python main.py --predict\n(Load Model Bundle, 2026 Forecasts & Uncertainty)"]
+    S3["3. python main.py --simulate\n(Energy Balance Check, 500-Yr SCM & 5k Ensemble)"]
+    S4["4. python main.py --graphs\n(Regenerate All 28 Unique Visualizations / 34 Files)"]
+    S5["5. python main.py --test\n(27 Automated Verification Tests)"]
 
-    S1 --> S2 --> S3 --> S4
+    S1 --> S2 --> S3 --> S4 --> S5
 ```
+
+```powershell
+# Individual CLI commands:
+python main.py --pipeline    # Train Ridge ARX & evaluate Protocol A/B
+python main.py --predict     # 2026 projections & error bounds
+python main.py --simulate    # Physical 1D ocean heat diffusion simulation
+python main.py --graphs      # Generate and verify all 28 visualizations
+python main.py --test        # Run all 27 automated tests
+```
+
+---
+
+### 5. Viewing All Generated Visualizations
+
+To view the complete gallery of all 28 project visualizations (including high-resolution PNGs and vector PDFs), open the included offline HTML viewer in your web browser:
+
+```powershell
+start GRAPH_INDEX.html
+```
+
+For complete documentation of all tabular datasets, model schemas, and graph descriptions, consult `OUTPUTS_GUIDE.md`.
 
 ---
 

@@ -14,6 +14,7 @@ import sys
 import numpy as np
 import pandas as pd
 import joblib
+from src.features import build_step_feature_vector, FEATURE_COLS
 
 # Ensure UTF-8 output across Windows consoles
 if hasattr(sys.stdout, 'reconfigure'):
@@ -114,23 +115,7 @@ def run_2026_projection(model_bundle=None):
         m = int(row["month"])
         actual_co2 = float(row["average"])
 
-        t1 = temp_hist[-1]
-        t2 = temp_hist[-2]
-        t3 = temp_hist[-3]
-        t12 = temp_hist[-12]
-
-        c1 = co2_hist[-1]
-        c2 = co2_hist[-2]
-        c13 = co2_hist[-13]
-
-        feat_vector = np.array([[
-            t1, t2, t3, t12,
-            np.log(c1),
-            c1 - c2,
-            c1 - c13,
-            np.sin(2 * np.pi * m / 12.0),
-            np.cos(2 * np.pi * m / 12.0)
-        ]])
+        feat_vector = build_step_feature_vector(temp_hist, co2_hist, m)
 
         pred_val = float(model.predict(feat_vector)[0])
         half_width = 1.96 * sigma_h[step_idx]

@@ -32,6 +32,7 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 import xgboost as xgb
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score
 from sklearn.inspection import permutation_importance
+from src.features import build_climate_features, build_step_feature_vector, FEATURE_COLS
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(PROJECT_ROOT, "climate_paired.csv")
@@ -49,27 +50,7 @@ def load_and_prepare_data():
         raise FileNotFoundError(f"Paired dataset not found at {DATA_FILE}")
 
     df = pd.read_csv(DATA_FILE, comment="#")
-    df["date_dt"] = pd.to_datetime(df["date"])
-    df = df.sort_values("date_dt").reset_index(drop=True)
-
-    # Feature Engineering (strictly past information)
-    df["target_temp"] = df["temp_anomaly_c"]
-    df["temp_lag1"] = df["temp_anomaly_c"].shift(1)
-    df["temp_lag2"] = df["temp_anomaly_c"].shift(2)
-    df["temp_lag3"] = df["temp_anomaly_c"].shift(3)
-    df["temp_lag12"] = df["temp_anomaly_c"].shift(12)
-
-    df["co2_lag1"] = df["co2_ppm"].shift(1)
-    df["ln_co2_lag1"] = np.log(df["co2_lag1"])
-    df["co2_diff1"] = df["co2_ppm"].shift(1) - df["co2_ppm"].shift(2)
-    df["co2_diff12"] = df["co2_ppm"].shift(1) - df["co2_ppm"].shift(13)
-
-    df["sin_month"] = np.sin(2 * np.pi * df["month"] / 12.0)
-    df["cos_month"] = np.cos(2 * np.pi * df["month"] / 12.0)
-
-    # Drop rows with NaN from 12-month lag initialization
-    df_clean = df.dropna().reset_index(drop=True)
-    return df_clean
+    return build_climate_features(df, dropna=True)
 
 
 def run_pipeline():
@@ -165,20 +146,14 @@ def run_pipeline():
     # Protocol B: Recursive Multi-Step 10-Year Rollout
     def roll_test_recursive(model_func):
         hist_temp = list(df.loc[trainval_mask, "target_temp"].values)
-        hist_co2 = list(df.loc[trainval_mask, "co2_lag1"].values)
-        test_co2 = list(df.loc[test_mask, "co2_lag1"].values)
+        hist_co2 = list(df.loc[trainval_mask, "co2_ppm"].values)
+        test_co2 = list(df.loc[test_mask, "co2_ppm"].values)
         test_m = list(df.loc[test_mask, "month"].values)
         preds = []
         for i in range(len(y_test)):
             m = test_m[i]
             c1 = test_co2[i]
-            c2 = hist_co2[-1]
-            c13 = hist_co2[-12]
-            x = np.array([[
-                hist_temp[-1], hist_temp[-2], hist_temp[-3], hist_temp[-12],
-                np.log(c1), c1 - c2, c1 - c13,
-                np.sin(2 * np.pi * m / 12.0), np.cos(2 * np.pi * m / 12.0)
-            ]])
+            x = build_step_feature_vector(hist_temp, hist_co2, m)
             p = float(model_func(x)[0])
             preds.append(p)
             hist_temp.append(p)

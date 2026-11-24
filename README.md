@@ -2,7 +2,7 @@
 **Empirical Investigation of Atmospheric $\text{CO}_2$ Radiative Forcing and Global Temperature Anomalies (1958–2025) Coupled with 1D Ocean Diffusion Physical Climate Modeling**
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Pytest: 21 Passed](https://img.shields.io/badge/tests-21%20passed-brightgreen.svg)]()
+[![Pytest: 27 Passed](https://img.shields.io/badge/tests-27%20passed-brightgreen.svg)]()
 [![Status: Complete & Verified](https://img.shields.io/badge/status-complete%20%26%20verified-brightgreen.svg)]()
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)]()
 
@@ -181,41 +181,40 @@ ml_model/
 ## 7. How to Reproduce All Results
 
 ### 1. Environment Setup
-```bash
+```powershell
+# Open Windows PowerShell in project directory:
+cd c:\climate_sensitivity_ml
+
+# Create and activate virtual environment (optional):
 python -m venv test_env
-test_env\Scripts\activate   # Windows
+test_env\Scripts\activate
+
+# Install verified dependencies:
 pip install -r requirements.txt
 ```
 
-### 2. Run Empirical Pipeline
-```bash
-python run_pipeline.py
+### 2. Unified Master Execution (`main.py`)
+Run the complete end-to-end research workflow in sequence (trains model, generates predictions, simulates DOECLIM, regenerates all 28 visualizations, and verifies with 27 pytest tests):
+```powershell
+python main.py --all
 ```
-*Fits models, evaluates Protocol A & B, saves `ridge_climate_model.joblib` and `evaluation_protocols_comparison.csv`.*
 
-### 3. Run Inference & 2026 Forecasts
-```bash
-python predict.py
+### 3. Modular Stage Execution
+Run individual research stages on demand:
+```powershell
+python main.py --pipeline    # Fit Ridge ARX model, evaluate Protocol A/B, serialize bundle
+python main.py --predict     # Autonomous recursive rollout & 2026 forecast with uncertainty
+python main.py --simulate    # Run DOECLIM 1D ocean heat diffusion simulation under 2xCO2
+python main.py --graphs      # Regenerate and audit all 28 project visualizations (34 files)
+python main.py --test        # Run all 27 automated tests (pytest -v tests/)
 ```
-*Loads serialized bundle, evaluates recursive uncertainty intervals, saves `projected_anomalies_2026.csv`.*
 
-### 4. Run Physical SCM Simulation
-```bash
-python simulate_hector_2xco2.py
-```
-*Verifies energy conservation, runs 500-yr deterministic runs and 5,000-member Monte Carlo ensemble.*
-
-### 5. Generate Faculty Presentation Graphs & Metrics
-```bash
-python generate_faculty_graphs.py
-```
-*Generates all 6 publication-resolution figures (300 DPI PNG + vector PDF) and verified CSV tables in `modeling_outputs/faculty_graphs/`.*
-
-### 6. Run Automated Test Suite
-```bash
-pytest -v tests/
-```
-*Executes all 21 unit, integration, and physical integrity tests.*
+### 4. Interactive Visual Gallery & Documentation
+- **Visual Gallery:** Open `GRAPH_INDEX.html` directly in any browser for an interactive, responsive view of all 28 project visualizations:
+  ```powershell
+  start GRAPH_INDEX.html
+  ```
+- **Outputs Reference:** Detailed column dictionaries, artifact schemas, and descriptions are documented in [`OUTPUTS_GUIDE.md`](OUTPUTS_GUIDE.md).
 
 ---
 

@@ -8,10 +8,14 @@ import sys
 import numpy as np
 import pandas as pd
 
-PROJECT = r"c:\Users\bharg\OneDrive\Desktop\ml_model"
-DATA_FILE = os.path.join(PROJECT, "climate_paired.csv")
-EDA_DIR = os.path.join(PROJECT, "eda_outputs")
-os.makedirs(EDA_DIR, exist_ok=True)
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+DATA_FILE = PROJECT_ROOT / "climate_paired.csv"
+if not DATA_FILE.exists():
+    raise FileNotFoundError(f"Required dataset not found at: {DATA_FILE}")
+EDA_DIR = PROJECT_ROOT / "eda_outputs"
+EDA_DIR.mkdir(parents=True, exist_ok=True)
 
 print("Loading paired dataset...")
 df = pd.read_csv(DATA_FILE, comment="#")

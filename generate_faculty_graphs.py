@@ -42,6 +42,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from scipy import stats
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from src.features import build_climate_features, build_step_feature_vector, FEATURE_COLS
 
 # Styling setup
 plt.rcParams['font.sans-serif'] = 'DejaVu Sans', 'Arial', 'Helvetica'
@@ -72,26 +73,7 @@ def compute_test_predictions(bundle, df_paired):
     model = bundle["model"]
     feature_names = bundle["feature_names"]
     
-    # Reconstruct features identically to pipeline
-    df = df_paired.copy()
-    df["temp_lag1"] = df["temp_anomaly_c"].shift(1)
-    df["temp_lag2"] = df["temp_anomaly_c"].shift(2)
-    df["temp_lag3"] = df["temp_anomaly_c"].shift(3)
-    df["temp_lag12"] = df["temp_anomaly_c"].shift(12)
-    
-    df["co2_lag1"] = df["co2_ppm"].shift(1)
-    df["co2_lag2"] = df["co2_ppm"].shift(2)
-    df["co2_lag13"] = df["co2_ppm"].shift(13)
-    
-    df["ln_co2_lag1"] = np.log(df["co2_lag1"])
-    df["co2_diff1"] = df["co2_lag1"] - df["co2_lag2"]
-    df["co2_diff12"] = df["co2_lag1"] - df["co2_lag13"]
-    
-    df["sin_month"] = np.sin(2.0 * np.pi * df["month"] / 12.0)
-    df["cos_month"] = np.cos(2.0 * np.pi * df["month"] / 12.0)
-    
-    # 801 valid rows (1959-04 to 2025-12)
-    clean_df = df.dropna().reset_index(drop=True)
+    clean_df = build_climate_features(df_paired, dropna=True)
     clean_df["date"] = pd.to_datetime(clean_df["year"].astype(str) + "-" + clean_df["month"].astype(str).str.zfill(2) + "-01")
     
     test_df = clean_df[clean_df["year"] >= 2016].copy().reset_index(drop=True)
@@ -109,23 +91,7 @@ def compute_test_predictions(bundle, df_paired):
     y_pred_rec = []
     for idx, row in test_df.iterrows():
         m_num = int(row["month"])
-        t1 = temp_hist[-1]
-        t2 = temp_hist[-2]
-        t3 = temp_hist[-3]
-        t12 = temp_hist[-12]
-        
-        c1 = co2_hist[-1]
-        c2 = co2_hist[-2]
-        c13 = co2_hist[-13]
-        
-        feat_vector = np.array([[
-            t1, t2, t3, t12,
-            np.log(c1),
-            c1 - c2,
-            c1 - c13,
-            np.sin(2.0 * np.pi * m_num / 12.0),
-            np.cos(2.0 * np.pi * m_num / 12.0)
-        ]])
+        feat_vector = build_step_feature_vector(temp_hist, co2_hist, m_num)
         
         pred_val = float(model.predict(feat_vector)[0])
         y_pred_rec.append(pred_val)

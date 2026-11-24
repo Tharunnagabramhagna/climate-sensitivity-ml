@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Gallery | Investigating Climate Sensitivity Under 2×CO₂</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: #e2e8f0;
+            --primary-color: #0284c7;
+            --primary-hover: #0369a1;
+            --badge-bg: #e0f2fe;
+            --badge-text: #0369a1;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --card-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding-bottom: 60px;
+        }
+
+        header {
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 30px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item strong {
+            color: var(--primary-color);
+        }
+
+        nav.tabs {
+            max-width: 1400px;
+            margin: 24px auto 0 auto;
+            padding: 0 40px;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border-color: var(--primary-color);
+        }
+
+        main {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 40px;
+        }
+
+        .section-header {
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-desc {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 28px;
+            margin-bottom: 48px;
+        }
+
+        @media (max-width: 768px) {
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+            header, nav.tabs, main {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--card-hover);
+        }
+
+        .image-container {
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 260px;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 4px;
+        }
+
+        .card-body {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-tag {
+            align-self: flex-start;
+            background-color: var(--badge-bg);
+            color: var(--badge-text);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            line-height: 1.35;
+        }
+
+        .card-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            flex-grow: 1;
+            line-height: 1.5;
+        }
+
+        .card-meta {
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-meta code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.78rem;
+        }
+
+        .card-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .card-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <h1>Climate Sensitivity Under 2×CO₂ Visual Gallery</h1>
+        <p class="subtitle">Complete visual verification catalog for Ridge Regression (α=0.01) ARX and DOECLIM Physical Climate Models</p>
+        <div class="stats-bar">
+            <div class="stat-item">Total Visualizations: <strong>28 Unique Figures (34 Files)</strong></div>
+            <div class="stat-item">Section 1: <strong>6 Faculty Figures (+6 Vector PDFs)</strong></div>
+            <div class="stat-item">Section 2: <strong>4 SCM DOECLIM Figures</strong></div>
+            <div class="stat-item">Section 3: <strong>10 EDA Figures</strong></div>
+            <div class="stat-item">Section 4: <strong>8 Interpretability & Diagnostic Figures</strong></div>
+        </div>
+    </div>
+</header>
+
+<nav class="tabs">
+    <button class="tab-btn active" onclick="filterSection('all')">All Visualizations (28)</button>
+    <button class="tab-btn" onclick="filterSection('sec-faculty')">Faculty Publication (6)</button>
+    <button class="tab-btn" onclick="filterSection('sec-scm')">SCM DOECLIM (4)</button>
+    <button class="tab-btn" onclick="filterSection('sec-eda')">Exploratory Data Analysis (10)</button>
+    <button class="tab-btn" onclick="filterSection('sec-diagnostics')">Interpretability & Diagnostics (8)</button>
+</nav>
+
+<main>
+
+    <!-- SECTION 1: FACULTY -->
+    <section id="sec-faculty" class="gallery-section">
+        <div class="section-header">
+            <h2 class="section-title">Section 1: Faculty Presentation Visualizations</h2>
+            <p class="section-desc">Six primary research figures formatted for publication and academic review. Generated in high-resolution PNG (300 DPI) and vector PDF formats.</p>
+        </div>
+        <div class="gallery-grid">
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="modeling_outputs/faculty_graphs/01_actual_vs_predicted_scatter.png" alt="Fig 1 Actual vs Predicted Scatter" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Faculty Figure 1</span>
+                    <h3 class="card-title">Out-of-Sample Test Scatter: Actual vs. Predicted</h3>
+                    <p class="card-desc">Scatter comparison of NASA GISTEMP observations vs Protocol A Ridge predictions (2016–2025). Shows tight clustering along 1:1 identity line with R² = 0.6532 and RMSE = 0.1124°C.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>generate_faculty_graphs.py</code></span>
+                        <div class="card-links">
+                            <a href="modeling_outputs/faculty_graphs/01_actual_vs_predicted_scatter.png" target="_blank">PNG</a>
+                            <a href="modeling_outputs/faculty_graphs/01_actual_vs_predicted_scatter.pdf" target="_blank">PDF</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="modeling_outputs/faculty_graphs/02_actual_vs_predicted_timeline.png" alt="Fig 2 Timeline" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Faculty Figure 2</span>
+                    <h3 class="card-title">Test Period Timeline with 95% Confidence Intervals</h3>
+                    <p class="card-desc">Chronological trajectory of actual monthly temperature anomalies vs Protocol A predictions across 2016–2025 with ±1.96σ validation residual intervals (95% coverage).</p>
+                    <div class="card-meta">
+                        <span>Script: <code>generate_faculty_graphs.py</code></span>
+                        <div class="card-links">
+                            <a href="modeling_outputs/faculty_graphs/02_actual_vs_predicted_timeline.png" target="_blank">PNG</a>
+                            <a href="modeling_outputs/faculty_graphs/02_actual_vs_predicted_timeline.pdf" target="_blank">PDF</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="modeling_outputs/faculty_graphs/03_prediction_residuals_timeline.png" alt="Fig 3 Residuals" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Faculty Figure 3</span>
+                    <h3 class="card-title">Chronological Model Residuals Timeline</h3>
+                    <p class="card-desc">Prediction residuals (actual − predicted) across the 120-month out-of-sample test set. Confirms zero mean bias (-0.0002°C) and homoscedastic error dispersion over time.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>generate_faculty_graphs.py</code></span>
+                        <div class="card-links">
+                            <a href="modeling_outputs/faculty_graphs/03_prediction_residuals_timeline.png" target="_blank">PNG</a>
+                            <a href="modeling_outputs/faculty_graphs/03_prediction_residuals_timeline.pdf" target="_blank">PDF</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="modeling_outputs/faculty_graphs/04_residual_distribution_kde.png" alt="Fig 4 Residual Distribution" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Faculty Figure 4</span>
+                    <h3 class="card-title">Residual Distribution & Normality Diagnostics</h3>
+                    <p class="card-desc">Histogram and Kernel Density Estimation (KDE) curve of test set prediction errors compared against a theoretical Gaussian distribution, with Q-Q diagnostic plot confirming near-normality.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>generate_faculty_graphs.py</code></span>
+                        <div class="card-links">
+                            <a href="modeling_outputs/faculty_graphs/04_residual_distribution_kde.png" target="_blank">PNG</a>
+                            <a href="modeling_outputs/faculty_graphs/04_residual_distribution_kde.pdf" target="_blank">PDF</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="modeling_outputs/faculty_graphs/05_recursive_forecast_vs_actual.png" alt="Fig 5 Recursive Forecast" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Faculty Figure 5</span>
+                    <h3 class="card-title">Protocol B: Autonomous 10-Year Recursive Forecast</h3>
+                    <p class="card-desc">120-month autonomous recursive rollout from 2015-12 without true temperature feedback. Shows secular warming drift and expanding analytical uncertainty cone ±1.96σ(h).</p>
+                    <div class="card-meta">
+                        <span>Script: <code>generate_faculty_graphs.py</code></span>
+                        <div class="card-links">
+                            <a href="modeling_outputs/faculty_graphs/05_recursive_forecast_vs_actual.png" target="_blank">PNG</a>
+                            <a href="modeling_outputs/faculty_graphs/05_recursive_forecast_vs_actual.pdf" target="_blank">PDF</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="modeling_outputs/faculty_graphs/06_historical_co2_vs_temperature.png" alt="Fig 6 Full Record" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Faculty Figure 6</span>
+                    <h3 class="card-title">Full Observational Record (1958–2025)</h3>
+                    <p class="card-desc">Dual-axis observational record of NOAA Mauna Loa atmospheric CO₂ against NASA GISTEMP temperature anomaly, demarcating Train (1959–2005), Validation (2006–2015), and Test (2016–2025) partitions.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>generate_faculty_graphs.py</code></span>
+                        <div class="card-links">
+                            <a href="modeling_outputs/faculty_graphs/06_historical_co2_vs_temperature.png" target="_blank">PNG</a>
+                            <a href="modeling_outputs/faculty_graphs/06_historical_co2_vs_temperature.pdf" target="_blank">PDF</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECTION 2: SCM DOECLIM -->
+    <section id="sec-scm" class="gallery-section">
+        <div class="section-header">
+            <h2 class="section-title">Section 2: Simple Climate Model Visualizations (DOECLIM)</h2>
+            <p class="section-desc">Physical climate simulation results governed by upper-ocean energy conservation and 1D vertical thermocline diffusion.</p>
+        </div>
+        <div class="gallery-grid">
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="hector_outputs/01_hector_probabilistic_plume_500yr.png" alt="Probabilistic Plume" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Physical Simulation 1</span>
+                    <h3 class="card-title">500-Year Probabilistic Warming Plume</h3>
+                    <p class="card-desc">5,000-member Monte Carlo ensemble under abrupt 2×CO₂ forcing with 5th, 50th, and 95th percentiles illustrating parameter uncertainty propagation across ocean diffusivity and feedback damping.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>simulate_hector_2xco2.py</code></span>
+                        <div class="card-links"><a href="hector_outputs/01_hector_probabilistic_plume_500yr.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="hector_outputs/02_physical_scm_vs_empirical_ml_2xco2.png" alt="SCM vs ML" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Physical Simulation 2</span>
+                    <h3 class="card-title">Physical SCM vs Empirical ML Under 2×CO₂</h3>
+                    <p class="card-desc">Contrasting multi-century physical ocean thermal uptake against empirical ML models, demonstrating that regression models reach premature equilibrium without physical thermal inertia.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>simulate_hector_2xco2.py</code></span>
+                        <div class="card-links"><a href="hector_outputs/02_physical_scm_vs_empirical_ml_2xco2.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="hector_outputs/03_ocean_heat_and_planetary_imbalance.png" alt="Ocean Heat" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Physical Simulation 3</span>
+                    <h3 class="card-title">Ocean Heat Uptake & Planetary Imbalance</h3>
+                    <p class="card-desc">Downward ocean heat uptake flux N(t) through the thermocline and declining top-of-atmosphere radiative planetary energy imbalance over the 500-year equilibration horizon.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>simulate_hector_2xco2.py</code></span>
+                        <div class="card-links"><a href="hector_outputs/03_ocean_heat_and_planetary_imbalance.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="hector_outputs/04_transient_climate_response_1pct.png" alt="TCR 1pct" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Physical Simulation 4</span>
+                    <h3 class="card-title">Transient Climate Response (1%/yr Compounding)</h3>
+                    <p class="card-desc">Standardized 1%/year CO₂ compounding experiment demonstrating transient temperature response reaching TCR at Year 70 upon doubling, well below final ECS equilibrium.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>simulate_hector_2xco2.py</code></span>
+                        <div class="card-links"><a href="hector_outputs/04_transient_climate_response_1pct.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECTION 3: EDA -->
+    <section id="sec-eda" class="gallery-section">
+        <div class="section-header">
+            <h2 class="section-title">Section 3: Exploratory Data Analysis (EDA)</h2>
+            <p class="section-desc">Comprehensive statistical inspection of NOAA Mauna Loa CO₂ and NASA GISTEMP temperature records.</p>
+        </div>
+        <div class="gallery-grid">
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="eda_outputs/01_co2_over_time.png" alt="CO2 Over Time" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">EDA 1</span>
+                    <h3 class="card-title">Atmospheric CO₂ Over Time (1958–2025)</h3>
+                    <p class="card-desc">Continuous monthly NOAA Mauna Loa Keeling curve showing biospheric seasonal oscillation and steady upward anthropogenic secular accumulation.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_make_plots.py</code></span>
+                        <div class="card-links"><a href="eda_outputs/01_co2_over_time.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="eda_outputs/02_temp_anomaly_over_time.png" alt="Temp Over Time" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">EDA 2</span>
+                    <h3 class="card-title">Global Surface Temperature Anomalies</h3>
+                    <p class="card-desc">NASA GISTEMP monthly surface temperature anomaly record documenting modern warming acceleration relative to 1951–1980 baseline.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_make_plots.py</code></span>
+                        <div class="card-links"><a href="eda_outputs/02_temp_anomaly_over_time.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="eda_outputs/03_co2_distribution.png" alt="CO2 Distribution" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">EDA 3</span>
+                    <h3 class="card-title">Atmospheric CO₂ Probability Density</h3>
+                    <p class="card-desc">Distribution histogram and kernel density estimation for monthly CO₂ concentrations spanning 315 ppm to over 427 ppm.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_make_plots.py</code></span>
+                        <div class="card-links"><a href="eda_outputs/03_co2_distribution.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="eda_outputs/04_temp_distribution.png" alt="Temp Distribution" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">EDA 4</span>
+                    <h3 class="card-title">Temperature Anomaly Distribution</h3>
+                    <p class="card-desc">Statistical distribution of monthly temperature anomalies illustrating positive skewness driven by recent modern warming decades.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_make_plots.py</code></span>
+                        <div class="card-links"><a href="eda_outputs/04_temp_distribution.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="eda_outputs/05_scatter_co2_vs_temp.png" alt="Scatter CO2 vs Temp" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">EDA 5</span>
+                    <h3 class="card-title">Bivariate Scatter: CO₂ vs. Temperature</h3>
+                    <p class="card-desc">Direct bivariate scatter plot with ordinary least squares fit demonstrating strong level correlation (r = 0.9278).</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_make_plots.py</code></span>
+                        <div class="card-links"><a href="eda_outputs/05_scatter_co2_vs_temp.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="eda_outputs/06_correlation_robustness.png" alt="Correlation Robustness" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">EDA 6</span>
+                    <h3 class="card-title">Detrending & Correlation Robustness</h3>
+                    <p class="card-desc">Differencing and detrending diagnostic exposing econometric spurious correlation risk when evaluating non-stationary time series in raw levels.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_make_plots.py</code></span>
+                        <div class="card-links"><a href="eda_outputs/06_correlation_robustness.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="eda_outputs/07_rolling_averages.png" alt="Rolling Averages" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">EDA 7</span>
+                    <h3 class="card-title">Multi-Scale Rolling Means</h3>
+                    <p class="card-desc">12-month, 36-month, and 60-month smoothing filters separating high-frequency internal variability (ENSO) from decadal radiative warming trends.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_make_plots.py</code></span>
+                        <div class="card-links"><a href="eda_outputs/07_rolling_averages.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="eda_outputs/08_decadal_trends.png" alt="Decadal Trends" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">EDA 8</span>
+                    <h3 class="card-title">Decadal Warming Rates</h3>
+                    <p class="card-desc">Decade-by-decade regression slopes quantifying the acceleration of global warming rates from the 1960s to the 2020s.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_make_plots.py</code></span>
+                        <div class="card-links"><a href="eda_outputs/08_decadal_trends.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="eda_outputs/09_autocorrelation_acf.png" alt="Autocorrelation ACF" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">EDA 9</span>
+                    <h3 class="card-title">Temperature ACF & PACF Autocorrelation</h3>
+                    <p class="card-desc">Autocorrelation and Partial Autocorrelation plots identifying significant AR(1), AR(2), and seasonal lag-12 persistence structures in monthly temperature anomalies.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_make_plots.py</code></span>
+                        <div class="card-links"><a href="eda_outputs/09_autocorrelation_acf.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="eda_outputs/10_unusual_observations_events.png" alt="Unusual Events" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">EDA 10</span>
+                    <h3 class="card-title">Major Climate Forcing Events</h3>
+                    <p class="card-desc">Annotation of major volcanic cooling episodes (Mount Pinatubo 1991, El Chichón 1982) and super El Niño warming spikes (1998, 2016, 2023–2024).</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_make_plots.py</code></span>
+                        <div class="card-links"><a href="eda_outputs/10_unusual_observations_events.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECTION 4: INTERPRETABILITY & DIAGNOSTICS -->
+    <section id="sec-diagnostics" class="gallery-section">
+        <div class="section-header">
+            <h2 class="section-title">Section 4: Model Interpretability & Diagnostic Verification</h2>
+            <p class="section-desc">In-depth statistical validation, feature attribution, residual diagnostics, and comparative model verification.</p>
+        </div>
+        <div class="gallery-grid">
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="interpretation_outputs/01_feature_importance_attribution.png" alt="Feature Attribution" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Interpretability 1</span>
+                    <h3 class="card-title">Standardized Feature Coefficients</h3>
+                    <p class="card-desc">Standardized Ridge regression weights confirming dominant autoregressive inertia (lag-1 weight +0.43) paired with logarithmic CO₂ radiative sensitivity (+1.23).</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_interpretation.py</code></span>
+                        <div class="card-links"><a href="interpretation_outputs/01_feature_importance_attribution.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="interpretation_outputs/02_shap_temporal_decomposition.png" alt="Temporal Decomposition" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Interpretability 2</span>
+                    <h3 class="card-title">Temporal Feature Attribution Decomposition</h3>
+                    <p class="card-desc">Decomposition of model forecasts separating high-frequency thermal persistence from low-frequency greenhouse radiative forcing over time.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_interpretation.py</code></span>
+                        <div class="card-links"><a href="interpretation_outputs/02_shap_temporal_decomposition.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="interpretation_outputs/03_era_performance_comparison.png" alt="Era Comparison" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Interpretability 3</span>
+                    <h3 class="card-title">Performance Across Historical Climate Eras</h3>
+                    <p class="card-desc">Sub-period evaluation across four distinct climatic regimes: 1959–1975 (Aerosol Cooling), 1976–1997 (Greenhouse Rise), 1998–2012 (Hiatus), and 2013–2025 (Modern Acceleration).</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_interpretation.py</code></span>
+                        <div class="card-links"><a href="interpretation_outputs/03_era_performance_comparison.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="interpretation_outputs/04_overfitting_comparison.png" alt="Overfitting Check" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Interpretability 4</span>
+                    <h3 class="card-title">Train vs. Validation vs. Test Generalization</h3>
+                    <p class="card-desc">Error progression across partitions demonstrating that Ridge regression avoids overfitting (Test RMSE 0.1124°C closely matches Validation RMSE 0.1111°C).</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_interpretation.py</code></span>
+                        <div class="card-links"><a href="interpretation_outputs/04_overfitting_comparison.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="modeling_outputs/baseline_test_predictions.png" alt="Baseline Predictions" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Diagnostics 1</span>
+                    <h3 class="card-title">Baseline Persistence Test Forecasts</h3>
+                    <p class="card-desc">Out-of-sample benchmark of naive persistence (lag-1) and seasonal persistence (lag-12) against test observations.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_baseline_model.py</code></span>
+                        <div class="card-links"><a href="modeling_outputs/baseline_test_predictions.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="modeling_outputs/baseline_residual_diagnostics.png" alt="Baseline Residuals" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Diagnostics 2</span>
+                    <h3 class="card-title">Baseline Residual Diagnostics</h3>
+                    <p class="card-desc">Residual diagnostic inspection for persistence baselines, demonstrating residual autocorrelation and bias during regime shifts.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_baseline_model.py</code></span>
+                        <div class="card-links"><a href="modeling_outputs/baseline_residual_diagnostics.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="modeling_outputs/advanced_models_test_forecasts.png" alt="Tree Forecasts" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Diagnostics 3</span>
+                    <h3 class="card-title">Tree Ensemble Extrapolation Breakdown</h3>
+                    <p class="card-desc">Comparative forecasts of Random Forest, GBDT, and XGBoost on test data, illustrating leaf-node saturation and failure to extrapolate beyond historical training bounds.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_advanced_models.py</code></span>
+                        <div class="card-links"><a href="modeling_outputs/advanced_models_test_forecasts.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="image-container">
+                    <img src="modeling_outputs/advanced_models_residuals.png" alt="Advanced Residuals" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <span class="card-tag">Diagnostics 4</span>
+                    <h3 class="card-title">Tree Model Residual Diagnostics</h3>
+                    <p class="card-desc">Severe residual drift and systematic underestimation observed in decision tree ensembles when predicting unprecedented modern warming.</p>
+                    <div class="card-meta">
+                        <span>Script: <code>scratch_advanced_models.py</code></span>
+                        <div class="card-links"><a href="modeling_outputs/advanced_models_residuals.png" target="_blank">View PNG</a></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<script>
+    function filterSection(targetId) {
+        // Update tab buttons
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Toggle sections
+        const sections = document.querySelectorAll('.gallery-section');
+        sections.forEach(sec => {
+            if (targetId === 'all' || sec.id === targetId) {
+                sec.style.display = 'block';
+            } else {
+                sec.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

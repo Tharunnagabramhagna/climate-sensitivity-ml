@@ -12,6 +12,7 @@ import pandas as pd
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
 from run_pipeline import load_and_prepare_data
+from src.features import build_climate_features, build_step_feature_vector, FEATURE_COLS, TARGET_COL
 
 
 def test_feature_matrix_integrity():
@@ -67,4 +68,35 @@ def test_chronological_splits():
     # No temporal overlap
     assert df.loc[train_mask, "year"].max() < df.loc[val_mask, "year"].min()
     assert df.loc[val_mask, "year"].max() < df.loc[test_mask, "year"].min()
+
+
+def test_centralized_feature_builder_consistency():
+    """Verify src.features produces identical output and respects FEATURE_COLS order."""
+    df_raw = pd.read_csv(os.path.join(PROJECT_ROOT, "climate_paired.csv"), comment="#")
+    df_feat = build_climate_features(df_raw, dropna=True)
+    df_pipe = load_and_prepare_data()
+
+    assert len(df_feat) == 801
+    assert df_feat.shape == df_pipe.shape
+    for col in FEATURE_COLS + [TARGET_COL]:
+        assert np.allclose(df_feat[col].values, df_pipe[col].values)
+
+
+def test_step_feature_vector_builder():
+    """Verify build_step_feature_vector creates correct shape and raises on short history."""
+    temp_hist = [0.1 * i for i in range(12)]
+    co2_hist = [350.0 + i for i in range(13)]
+    vec = build_step_feature_vector(temp_hist, co2_hist, month=5)
+
+    assert vec.shape == (1, 9)
+    # Check lag 1 temp and CO2 match last elements
+    assert np.isclose(vec[0, 0], temp_hist[-1])
+    assert np.isclose(vec[0, 4], np.log(co2_hist[-1]))
+
+    # Test error handling on insufficient history
+    with pytest.raises(ValueError):
+        build_step_feature_vector(temp_hist[:11], co2_hist, month=5)
+    with pytest.raises(ValueError):
+        build_step_feature_vector(temp_hist, co2_hist[:12], month=5)
+
 

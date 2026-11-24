@@ -12,10 +12,14 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score
 
-PROJECT = r"c:\Users\bharg\OneDrive\Desktop\ml_model"
-DATA_FILE = os.path.join(PROJECT, "climate_paired.csv")
-MODELS_DIR = os.path.join(PROJECT, "modeling_outputs")
-os.makedirs(MODELS_DIR, exist_ok=True)
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+DATA_FILE = PROJECT_ROOT / "climate_paired.csv"
+if not DATA_FILE.exists():
+    raise FileNotFoundError(f"Required dataset not found at: {DATA_FILE}")
+MODELS_DIR = PROJECT_ROOT / "modeling_outputs"
+MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
 df = pd.read_csv(DATA_FILE, comment="#")
 df["date_dt"] = pd.to_datetime(df["date"])
