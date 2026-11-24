@@ -21,6 +21,7 @@ Outputs:
 
 import os
 import sys
+import time
 import numpy as np
 import pandas as pd
 import joblib
@@ -51,6 +52,51 @@ plt.rcParams['axes.linewidth'] = 0.9
 
 MODEL_PATH = os.path.join(PROJECT_ROOT, "modeling_outputs", "ridge_climate_model.joblib")
 DATA_PATH = os.path.join(PROJECT_ROOT, "climate_paired.csv")
+
+
+def safe_savefig(fig, file_path, **kwargs):
+    """
+    Safely saves a matplotlib figure to file_path on Windows without failing
+    if the destination file is memory-mapped or locked by viewers or indexers.
+    Uses atomic temporary file write and replacement with retries.
+    """
+    dir_name = os.path.dirname(file_path)
+    base_name = os.path.basename(file_path)
+    temp_path = os.path.join(dir_name, f".tmp_{os.getpid()}_{base_name}")
+
+    # Write figure cleanly to temp file first
+    fig.savefig(temp_path, **kwargs)
+
+    # Atomically replace destination file with retries
+    max_attempts = 5
+    for attempt in range(max_attempts):
+        try:
+            if os.path.exists(file_path):
+                try:
+                    os.replace(temp_path, file_path)
+                    return
+                except OSError:
+                    time.sleep(0.15 * (attempt + 1))
+                    try:
+                        os.remove(file_path)
+                    except OSError:
+                        pass
+                    os.replace(temp_path, file_path)
+                    return
+            else:
+                os.replace(temp_path, file_path)
+                return
+        except OSError:
+            if attempt == max_attempts - 1:
+                # Clean up temp file and fall back to direct savefig
+                if os.path.exists(temp_path):
+                    try:
+                        os.remove(temp_path)
+                    except OSError:
+                        pass
+                fig.savefig(file_path, **kwargs)
+                return
+            time.sleep(0.2 * (attempt + 1))
 
 
 def load_model_and_data():
@@ -243,8 +289,8 @@ def generate_graph_1(test_df):
     plt.tight_layout()
     png_path = os.path.join(OUTPUT_DIR, "01_actual_vs_predicted_scatter.png")
     pdf_path = os.path.join(OUTPUT_DIR, "01_actual_vs_predicted_scatter.pdf")
-    fig.savefig(png_path, dpi=300)
-    fig.savefig(pdf_path)
+    safe_savefig(fig, png_path, dpi=300)
+    safe_savefig(fig, pdf_path)
     plt.close(fig)
     print("Generated Graph 1:", png_path)
 
@@ -302,8 +348,8 @@ def generate_graph_2(test_df):
     plt.tight_layout()
     png_path = os.path.join(OUTPUT_DIR, "02_actual_vs_predicted_timeline.png")
     pdf_path = os.path.join(OUTPUT_DIR, "02_actual_vs_predicted_timeline.pdf")
-    fig.savefig(png_path, dpi=300)
-    fig.savefig(pdf_path)
+    safe_savefig(fig, png_path, dpi=300)
+    safe_savefig(fig, pdf_path)
     plt.close(fig)
     print("Generated Graph 2:", png_path)
 
@@ -360,8 +406,8 @@ def generate_graph_3(test_df):
     plt.tight_layout()
     png_path = os.path.join(OUTPUT_DIR, "03_prediction_residuals_timeline.png")
     pdf_path = os.path.join(OUTPUT_DIR, "03_prediction_residuals_timeline.pdf")
-    fig.savefig(png_path, dpi=300)
-    fig.savefig(pdf_path)
+    safe_savefig(fig, png_path, dpi=300)
+    safe_savefig(fig, pdf_path)
     plt.close(fig)
     print("Generated Graph 3:", png_path)
 
@@ -426,8 +472,8 @@ def generate_graph_4(test_df):
     plt.tight_layout()
     png_path = os.path.join(OUTPUT_DIR, "04_residual_distribution_kde.png")
     pdf_path = os.path.join(OUTPUT_DIR, "04_residual_distribution_kde.pdf")
-    fig.savefig(png_path, dpi=300)
-    fig.savefig(pdf_path)
+    safe_savefig(fig, png_path, dpi=300)
+    safe_savefig(fig, pdf_path)
     plt.close(fig)
     print("Generated Graph 4:", png_path)
 
@@ -506,8 +552,8 @@ def generate_graph_5(test_df):
     plt.tight_layout()
     png_path = os.path.join(OUTPUT_DIR, "05_recursive_forecast_vs_actual.png")
     pdf_path = os.path.join(OUTPUT_DIR, "05_recursive_forecast_vs_actual.pdf")
-    fig.savefig(png_path, dpi=300)
-    fig.savefig(pdf_path)
+    safe_savefig(fig, png_path, dpi=300)
+    safe_savefig(fig, pdf_path)
     plt.close(fig)
     print("Generated Graph 5:", png_path)
 
@@ -572,8 +618,8 @@ def generate_graph_6(df_paired):
     plt.tight_layout()
     png_path = os.path.join(OUTPUT_DIR, "06_historical_co2_vs_temperature.png")
     pdf_path = os.path.join(OUTPUT_DIR, "06_historical_co2_vs_temperature.pdf")
-    fig.savefig(png_path, dpi=300)
-    fig.savefig(pdf_path)
+    safe_savefig(fig, png_path, dpi=300)
+    safe_savefig(fig, pdf_path)
     plt.close(fig)
     print("Generated Graph 6:", png_path)
 

@@ -204,18 +204,59 @@ def execute_simulate():
     return run_stage("DOECLIM Physical Climate Simulation", cmd, "1D Ocean Heat Diffusion & Energy Balance Simulation under 2xCO2", check_artifacts_after=outputs)
 
 
-def execute_graphs():
+def open_gallery():
+    """
+    Conveniently opens GRAPH_INDEX.html in the default web browser.
+    Guarded so headless environments or automated runs do not crash or stall.
+    """
+    gallery_file = BASE_DIR / "GRAPH_INDEX.html"
+    if not gallery_file.exists():
+        print(f"[ERROR] Graph gallery file not found: {gallery_file}")
+        return False
+    print(f"\nOpening visual graph gallery: {gallery_file}")
+    try:
+        import webbrowser
+        opened = webbrowser.open(gallery_file.resolve().as_uri())
+        if opened:
+            print("[OK] Interactive graph gallery opened in your default browser.")
+        else:
+            print("[INFO] Web browser could not be launched directly (headless/no desktop environment).")
+            print(f"       You can view the gallery directly: {gallery_file.resolve().as_uri()}")
+    except Exception as exc:
+        print(f"[INFO] Automatic browser launch skipped ({exc}).")
+        print(f"       You can view the gallery directly: {gallery_file.resolve().as_uri()}")
+    return True
+
+
+def execute_graphs(open_gallery_after=False):
     cmd = [sys.executable, "generate_all_graphs.py"]
     faculty_dir = MODELING_DIR / "faculty_graphs"
     outputs = [
-        (faculty_dir / "01_actual_vs_predicted_scatter.png", "Faculty Fig 1 (Scatter)"),
-        (faculty_dir / "02_actual_vs_predicted_timeline.png", "Faculty Fig 2 (Timeline)"),
-        (faculty_dir / "03_prediction_residuals_timeline.png", "Faculty Fig 3 (Residuals)"),
-        (faculty_dir / "04_residual_distribution_kde.png", "Faculty Fig 4 (KDE Distribution)"),
-        (faculty_dir / "05_recursive_forecast_vs_actual.png", "Faculty Fig 5 (10-Yr Recursive)"),
-        (faculty_dir / "06_historical_co2_vs_temperature.png", "Faculty Fig 6 (CO2 vs Temp)"),
+        (faculty_dir / "01_actual_vs_predicted_scatter.png", "Faculty Fig 1 (Scatter PNG)"),
+        (faculty_dir / "01_actual_vs_predicted_scatter.pdf", "Faculty Fig 1 (Scatter PDF)"),
+        (faculty_dir / "02_actual_vs_predicted_timeline.png", "Faculty Fig 2 (Timeline PNG)"),
+        (faculty_dir / "02_actual_vs_predicted_timeline.pdf", "Faculty Fig 2 (Timeline PDF)"),
+        (faculty_dir / "03_prediction_residuals_timeline.png", "Faculty Fig 3 (Residuals PNG)"),
+        (faculty_dir / "03_prediction_residuals_timeline.pdf", "Faculty Fig 3 (Residuals PDF)"),
+        (faculty_dir / "04_residual_distribution_kde.png", "Faculty Fig 4 (KDE Distribution PNG)"),
+        (faculty_dir / "04_residual_distribution_kde.pdf", "Faculty Fig 4 (KDE Distribution PDF)"),
+        (faculty_dir / "05_recursive_forecast_vs_actual.png", "Faculty Fig 5 (10-Yr Recursive PNG)"),
+        (faculty_dir / "05_recursive_forecast_vs_actual.pdf", "Faculty Fig 5 (10-Yr Recursive PDF)"),
+        (faculty_dir / "06_historical_co2_vs_temperature.png", "Faculty Fig 6 (CO2 vs Temp PNG)"),
+        (faculty_dir / "06_historical_co2_vs_temperature.pdf", "Faculty Fig 6 (CO2 vs Temp PDF)"),
     ]
-    return run_stage("Generate All 28 Project Visualizations", cmd, "Regenerate Groups A, B, C, D, E (28 PNGs + 6 PDFs)", check_artifacts_after=outputs)
+    success, elapsed, found_outputs = run_stage(
+        "Generate All 28 Project Visualizations",
+        cmd,
+        "Regenerate Groups A, B, C, D, E (28 PNGs + 6 PDFs)",
+        check_artifacts_after=outputs
+    )
+    if success:
+        print("To view the interactive graph gallery, open GRAPH_INDEX.html or run:")
+        print("    python main.py --gallery\n")
+        if open_gallery_after:
+            open_gallery()
+    return success, elapsed, found_outputs
 
 
 def execute_test():
@@ -284,6 +325,7 @@ Examples:
   python main.py --predict     Run 10-year autonomous recursive forecast & 2026 predictions
   python main.py --simulate    Run DOECLIM 1D ocean heat diffusion simulation
   python main.py --graphs      Regenerate all 28 visualizations (34 files)
+  python main.py --gallery     Open interactive graph gallery in web browser
   python main.py --test        Run automated pytest suite
   python main.py --update-data Fetch latest official observations (NOAA/NASA)
   python main.py --all         Execute complete end-to-end workflow in sequence
@@ -294,6 +336,7 @@ Examples:
     parser.add_argument("--predict", action="store_true", help="Generate autonomous 10-yr forecast and 2026 projections (predict.py)")
     parser.add_argument("--simulate", action="store_true", help="Run DOECLIM physical climate simulation (simulate_hector_2xco2.py)")
     parser.add_argument("--graphs", action="store_true", help="Regenerate all 28 project visualizations (generate_all_graphs.py)")
+    parser.add_argument("--gallery", action="store_true", help="Open the interactive graph gallery (GRAPH_INDEX.html) in your browser")
     parser.add_argument("--test", action="store_true", help="Run full automated test suite (pytest -v tests/)")
     parser.add_argument("--update-data", action="store_true", help="Fetch latest official NOAA and NASA observations into data/updated/")
     parser.add_argument("--all", action="store_true", help="Execute complete workflow in sequence (Pipeline -> Predict -> Simulate -> Graphs -> Test)")
@@ -301,7 +344,7 @@ Examples:
     args = parser.parse_args()
 
     # If no arguments provided, show help and exit cleanly
-    if not (args.pipeline or args.predict or args.simulate or args.graphs or args.test or args.update_data or args.all):
+    if not (args.pipeline or args.predict or args.simulate or args.graphs or args.gallery or args.test or args.update_data or args.all):
         parser.print_help()
         sys.exit(0)
 
@@ -311,6 +354,8 @@ Examples:
 
     if args.all:
         ret = execute_all()
+        if ret == 0 and args.gallery:
+            open_gallery()
         sys.exit(ret)
 
     if args.pipeline:
@@ -326,8 +371,12 @@ Examples:
         sys.exit(0 if success else 1)
 
     if args.graphs:
-        success, _, _ = execute_graphs()
+        success, _, _ = execute_graphs(open_gallery_after=args.gallery)
         sys.exit(0 if success else 1)
+
+    if args.gallery:
+        ok = open_gallery()
+        sys.exit(0 if ok else 1)
 
     if args.test:
         success, _, _ = execute_test()

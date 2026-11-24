@@ -270,11 +270,11 @@
 </header>
 
 <nav class="tabs">
-    <button class="tab-btn active" onclick="filterSection('all')">All Visualizations (28)</button>
-    <button class="tab-btn" onclick="filterSection('sec-faculty')">Faculty Publication (6)</button>
-    <button class="tab-btn" onclick="filterSection('sec-scm')">SCM DOECLIM (4)</button>
-    <button class="tab-btn" onclick="filterSection('sec-eda')">Exploratory Data Analysis (10)</button>
-    <button class="tab-btn" onclick="filterSection('sec-diagnostics')">Interpretability & Diagnostics (8)</button>
+    <button class="tab-btn active" onclick="filterSection('all', this)">All Visualizations (28)</button>
+    <button class="tab-btn" onclick="filterSection('sec-faculty', this)">Faculty Publication (6)</button>
+    <button class="tab-btn" onclick="filterSection('sec-scm', this)">SCM DOECLIM (4)</button>
+    <button class="tab-btn" onclick="filterSection('sec-eda', this)">Exploratory Data Analysis (10)</button>
+    <button class="tab-btn" onclick="filterSection('sec-diagnostics', this)">Interpretability & Diagnostics (8)</button>
 </nav>
 
 <main>
@@ -764,11 +764,15 @@
 </main>
 
 <script>
-    function filterSection(targetId) {
+    function filterSection(targetId, btn) {
         // Update tab buttons
         const buttons = document.querySelectorAll('.tab-btn');
-        buttons.forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
+        buttons.forEach(b => b.classList.remove('active'));
+        if (btn) {
+            btn.classList.add('active');
+        } else if (typeof event !== 'undefined' && event && event.target) {
+            event.target.classList.add('active');
+        }
 
         // Toggle sections
         const sections = document.querySelectorAll('.gallery-section');

@@ -26,6 +26,7 @@ def test_main_cli_help():
     assert "--predict" in result.stdout
     assert "--simulate" in result.stdout
     assert "--graphs" in result.stdout
+    assert "--gallery" in result.stdout
     assert "--test" in result.stdout
     assert "--update-data" in result.stdout
     assert "--all" in result.stdout
@@ -64,3 +65,53 @@ def test_main_cli_predict_prerequisite_check(monkeypatch, tmp_path):
     success, elapsed, outputs = main.execute_predict()
     assert success is False
     assert outputs == []
+
+
+def test_main_cli_gallery(monkeypatch):
+    """Verify that 'python main.py --gallery' executes without error."""
+    import main
+    # Ensure webbrowser.open doesn't pop up a window during automated test
+    monkeypatch.setattr("webbrowser.open", lambda url: True)
+    assert main.open_gallery() is True
+
+
+def test_graph_gallery_integrity():
+    """Verify GRAPH_INDEX.html exists and all referenced 28 images and 34 links exist on disk."""
+    import re
+    from html.parser import HTMLParser
+
+    gallery_path = BASE_DIR / "GRAPH_INDEX.html"
+    assert gallery_path.exists(), "GRAPH_INDEX.html must exist in project root"
+
+    content = gallery_path.read_text(encoding="utf-8")
+
+    class GalleryParser(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.images = []
+            self.links = []
+        def handle_starttag(self, tag, attrs):
+            attr_dict = dict(attrs)
+            if tag == "img" and "src" in attr_dict:
+                self.images.append(attr_dict["src"])
+            elif tag == "a" and "href" in attr_dict:
+                href = attr_dict["href"]
+                if not href.startswith("#") and not href.startswith("http"):
+                    self.links.append(href)
+
+    parser = GalleryParser()
+    parser.feed(content)
+
+    assert len(parser.images) == 28, f"Expected 28 unique gallery images, found {len(parser.images)}"
+    assert len(parser.links) == 34, f"Expected 34 artifact links (28 PNGs + 6 PDFs), found {len(parser.links)}"
+
+    for img_path in parser.images:
+        p = BASE_DIR / img_path
+        assert p.exists(), f"Gallery image does not exist: {img_path}"
+        assert p.stat().st_size > 0, f"Gallery image is empty: {img_path}"
+
+    for link_path in parser.links:
+        p = BASE_DIR / link_path
+        assert p.exists(), f"Gallery linked artifact does not exist: {link_path}"
+        assert p.stat().st_size > 0, f"Gallery linked artifact is empty: {link_path}"
+

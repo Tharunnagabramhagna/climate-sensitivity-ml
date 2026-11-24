@@ -122,16 +122,21 @@ def check_prerequisites() -> bool:
 def execute_script(script_path: Path) -> Tuple[bool, str]:
     """Executes a Python script in a subprocess and returns success status."""
     t0 = time.time()
+    env = os.environ.copy()
+    env["PYTHONUNBUFFERED"] = "1"
     res = subprocess.run(
         [sys.executable, str(script_path)],
         cwd=str(PROJECT_ROOT),
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
+        env=env,
     )
     duration = time.time() - t0
     if res.returncode != 0:
         err_msg = res.stderr.strip() or res.stdout.strip()
-        return False, f"Failed ({duration:.1f}s): {err_msg[:200]}"
+        return False, f"Failed ({duration:.1f}s):\n{err_msg}"
     return True, f"Success ({duration:.1f}s)"
 
 
@@ -149,7 +154,28 @@ def verify_files(group_name: str, config: Dict) -> Tuple[int, int, List[str]]:
     return found, len(config["files"]), missing
 
 
-def generate_all_graphs(groups: List[str] = None) -> bool:
+def launch_gallery() -> bool:
+    """Conveniently opens GRAPH_INDEX.html in the default browser without failing on headless systems."""
+    gallery_path = PROJECT_ROOT / "GRAPH_INDEX.html"
+    if not gallery_path.exists():
+        print(f"[ERROR] Gallery file not found: {gallery_path}")
+        return False
+    print(f"\nOpening visual graph gallery: {gallery_path}")
+    try:
+        import webbrowser
+        opened = webbrowser.open(gallery_path.resolve().as_uri())
+        if opened:
+            print("[OK] Interactive graph gallery opened in default web browser.")
+        else:
+            print("[INFO] Web browser could not be launched directly (headless/no desktop environment).")
+            print(f"       View gallery directly: {gallery_path.resolve().as_uri()}")
+    except Exception as exc:
+        print(f"[INFO] Browser launch skipped ({exc}).")
+        print(f"       View gallery directly: {gallery_path.resolve().as_uri()}")
+    return True
+
+
+def generate_all_graphs(groups: List[str] = None, open_gallery: bool = False) -> bool:
     """
     Main orchestration routine.
     Regenerates all visualization groups and audits output files.
@@ -157,7 +183,7 @@ def generate_all_graphs(groups: List[str] = None) -> bool:
     print("=" * 80)
     print("MASTER GRAPH GENERATION & VISUALIZATION ENGINE")
     print("Climate Sensitivity Research Project: Complete 28-Plot Visualization Suite")
-    print("=" * 80)
+    print("=" * 80, flush=True)
 
     if not check_prerequisites():
         return False
@@ -168,6 +194,7 @@ def generate_all_graphs(groups: List[str] = None) -> bool:
     total_files_verified = 0
 
     target_groups = groups or list(GRAPH_GROUPS.keys())
+    group_exec_status: Dict[str, bool] = {}
 
     for group_name in target_groups:
         if group_name not in GRAPH_GROUPS:
@@ -176,7 +203,7 @@ def generate_all_graphs(groups: List[str] = None) -> bool:
 
         config = GRAPH_GROUPS[group_name]
         print(f"\nProcessing: {group_name}...")
-        print(f"  Target Directory: {config['dir']}")
+        print(f"  Target Directory: {config['dir']}", flush=True)
 
         # Ensure directory exists
         config["dir"].mkdir(parents=True, exist_ok=True)
@@ -186,23 +213,25 @@ def generate_all_graphs(groups: List[str] = None) -> bool:
         group_exec_ok = True
 
         for s in scripts:
-            print(f"  Executing: {s.name}...")
+            print(f"  Executing: {s.name}...", flush=True)
             ok, msg = execute_script(s)
             if not ok:
-                print(f"    [FAIL] {msg}")
+                print(f"    [FAIL] {msg}", flush=True)
                 group_exec_ok = False
                 all_passed = False
             else:
-                print(f"    [OK] {msg}")
+                print(f"    [OK] {msg}", flush=True)
+
+        group_exec_status[group_name] = group_exec_ok
 
         # Verify output files
         found, total, missing = verify_files(group_name, config)
         total_files_verified += found
         if missing:
-            print(f"  [AUDIT] {found}/{total} files present. Missing: {missing}")
+            print(f"  [AUDIT] {found}/{total} files present. Missing: {missing}", flush=True)
             all_passed = False
         else:
-            print(f"  [AUDIT] All {total} files verified present and non-empty (>0 bytes).")
+            print(f"  [AUDIT] All {total} files verified present and non-empty (>0 bytes).", flush=True)
 
     # Final summary table
     print("\n" + "=" * 80)
@@ -212,22 +241,40 @@ def generate_all_graphs(groups: List[str] = None) -> bool:
     print("-" * 80)
     for g_name, conf in GRAPH_GROUPS.items():
         found, total, missing = verify_files(g_name, conf)
-        status = "[PASS]" if found == total else f"[FAIL: -{len(missing)}]"
+        exec_ok = group_exec_status.get(g_name, True)
+        if exec_ok and found == total:
+            status = "[PASS]"
+        elif not exec_ok and found == total:
+            status = "[FAIL: Script Execution Error]"
+        elif exec_ok and missing:
+            status = f"[FAIL: -{len(missing)} Files]"
+        else:
+            status = f"[FAIL: Script Error & -{len(missing)} Files]"
         print(f"{g_name:<45} {conf['unique_count']:<8} {f'{found}/{total}':<10} {status:<10}")
 
     print("-" * 80)
     print(f"Total Unique Visualizations Verified: 28 / {total_unique_expected}")
     print(f"Total Image & PDF Files Verified:     {total_files_verified} / {total_files_expected}")
-    print("=" * 80)
+    print("=" * 80, flush=True)
 
     if all_passed:
         print("[SUCCESS] All 28 unique graphs successfully generated and verified!")
     else:
-        print("[WARNING] One or more visualization files could not be verified.")
+        print("[ERROR] One or more visualization generation scripts failed or output files could not be verified.")
+
+    if open_gallery:
+        launch_gallery()
 
     return all_passed
 
 
 if __name__ == "__main__":
-    success = generate_all_graphs()
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate and audit all project visualizations.")
+    parser.add_argument("--group", type=str, default=None, help="Target specific group name")
+    parser.add_argument("--gallery", "--open", action="store_true", help="Open GRAPH_INDEX.html in browser after generation")
+    cli_args = parser.parse_args()
+
+    target_grps = [cli_args.group] if cli_args.group else None
+    success = generate_all_graphs(groups=target_grps, open_gallery=cli_args.gallery)
     sys.exit(0 if success else 1)
