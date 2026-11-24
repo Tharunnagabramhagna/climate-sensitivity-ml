@@ -376,7 +376,7 @@ def generate_graph_3(test_df):
         f"• Std Deviation (σ):  {std_res:.4f} °C\n"
         f"• Max Positive Bias:  +{np.max(residuals):.4f} °C\n"
         f"• Max Negative Bias:  {np.min(residuals):.4f} °C\n"
-        f"• Durbin-Watson Stat: {dw_stat:.3f} (Near 2.0 = low autocorrelation)"
+        f"• Durbin-Watson Stat: {dw_stat:.3f} (Modest lag-1 positive autocorr)"
     )
     ax.text(0.02, 0.65, stats_text, transform=ax.transAxes, fontsize=9.0,
             bbox=dict(boxstyle="round,pad=0.5", facecolor="#ffffff", edgecolor="#cbd5e0", alpha=0.92))
@@ -442,9 +442,9 @@ def generate_graph_4(test_df):
         f"• Std Deviation:     {std_res:.4f} °C\n"
         f"• Skewness:          {skew_res:+.3f} (Near 0 = symmetric)\n"
         f"• Excess Kurtosis:   {kurt_res:+.3f} (Near 0 = mesokurtic)\n"
-        f"• Shapiro-Wilk p:    {shapiro_p:.3f} (p > 0.05 = Normal)\n"
+        f"• Shapiro-Wilk p:    {shapiro_p:.3f} (p > 0.05: fails to reject)\n"
         "• Assessment: Centered near zero with\n"
-        "  near-Gaussian symmetry."
+        "  consistent Gaussian symmetry."
     )
     ax.text(0.60, 0.45, stats_box, transform=ax.transAxes, fontsize=9.0,
             bbox=dict(boxstyle="round,pad=0.5", facecolor="#ffffff", edgecolor="#cbd5e0", alpha=0.92))
@@ -589,6 +589,7 @@ def generate_graph_6(df_paired):
         "  The high correlation (r = 0.9278) is largely driven by a shared upward multi-decadal trend.\n"
         "  When quadratically detrended, correlation collapses to r = 0.1451.\n"
         "  When differenced month-over-month (ΔCO₂ vs ΔT), correlation is r = -0.0218.\n"
+        "  (Note: detrending isolates short-term noise; it does not disprove physical greenhouse causation).\n"
         "• Correlation ≠ ECS: Bivariate regression cannot deduce Equilibrium Climate Sensitivity (ECS),\n"
         "  which is governed by multi-century deep ocean thermal equilibration (N → 0)."
     )

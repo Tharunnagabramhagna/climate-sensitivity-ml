@@ -87,7 +87,7 @@ This report accompanies the six publication-quality figures generated for facult
 - **What the Results Indicate:**
   - Homoscedasticity: The variance of residuals remains stable across the 10-year span without expanding trumpet shapes or variance explosion.
   - Coverage: $68.3\%$ of points fall within $\pm 1\sigma$, and $95.8\%$ fall within $\pm 2\sigma$, adhering closely to theoretical Gaussian expectations.
-  - Durbin-Watson statistic $d = 1.621$ demonstrates that the autoregressive feature matrix successfully removes the vast majority of serial correlation from raw temperature series ($d_{\text{raw}} = 0.43$).
+  - Durbin-Watson statistic $d = 1.526$ indicates modest positive first-order autocorrelation (along with lag-12 seasonal persistence ACF = +0.274), substantially reduced from the raw temperature series ($d_{\text{raw}} = 0.43$).
 - **Scientific Limitations That Apply:**
   - *Small Modern Positive Bias:* The mean residual is slightly positive ($\mu_e = +0.0310^\circ\text{C}$), indicating that the test decade (2016–2025) was slightly warmer than predicted based on the 1959–2015 historical training relationship. This reflects accelerating warming rates and unmodeled aerosol reductions in recent years.
 
@@ -108,7 +108,7 @@ This report accompanies the six publication-quality figures generated for facult
   - Mean ($\mu = +0.0310^\circ\text{C}$) and Median ($+0.0248^\circ\text{C}$) are within $0.03^\circ\text{C}$ of zero error.
   - Skewness ($+0.230$) is near zero, indicating a balanced distribution between over- and under-predictions.
   - Excess Kurtosis ($-0.070$) is nearly zero, proving absence of heavy-tailed catastrophic outliers.
-  - The Shapiro-Wilk test yields $p = 0.428$ ($p > 0.05$), failing to reject the null hypothesis of normality. This confirms that the linear Ridge model's residuals satisfy classical Gauss-Markov assumptions.
+  - The Shapiro-Wilk test yields $W = 0.9925, p = 0.769$ ($p > 0.05$), failing to reject the null hypothesis of normality at the 5% significance level. While failure to reject does not mathematically prove that the underlying distribution is perfectly Gaussian, it demonstrates that out-of-sample residuals exhibit near-zero skewness and mesokurtic kurtosis consistent with classical Gauss-Markov assumptions.
 - **Scientific Limitations That Apply:**
   - Normality holds for monthly aggregate global averages because spatial integration across thousands of weather stations invokes the Central Limit Theorem. This smooth Gaussian error behavior cannot be assumed for regional or daily extreme temperature projections.
 
@@ -150,8 +150,8 @@ This report accompanies the six publication-quality figures generated for facult
   - The raw correlation is very high: $r = +0.9278$ ($p < 10^{-300}$), $R^2 = 0.8608$.
   - The empirical slope is $+0.01077^\circ\text{C} / \text{ppm}$, indicating an average historical warming of $\sim 1.08^\circ\text{C}$ for every $100\text{ ppm}$ increase in atmospheric $\text{CO}_2$.
 - **Scientific Limitations That Apply (Essential Faculty Defense Topic):**
-  1. *The Granger–Newbold Spurious Correlation Risk:* Both $\text{CO}_2$ and global temperature are non-stationary time series with persistent upward secular drifts ($I(1)$ processes). As proven by Granger & Newbold (1974), regressing two trending non-stationary series yields spuriously high $r$ and $R^2$ values that do not reflect true causal coupling.
-  2. *Detrending and Differencing Collapse:* When the common quadratic acceleration trend is subtracted, correlation drops from $r = 0.9278$ to **$r = 0.1451$**. When evaluated on month-over-month first differences ($\Delta \text{CO}_2$ vs $\Delta T$), the correlation is **$r = -0.0218$** (effectively zero).
+  1. *The Granger–Newbold Spurious Correlation Risk:* Both $\text{CO}_2$ and global temperature are non-stationary time series with persistent upward secular drifts ($I(1)$ processes). As demonstrated by Granger & Newbold (1974), regressing trending non-stationary series can yield spuriously high $r$ and $R^2$ values even without direct causal coupling. While the physical greenhouse effect is causal over multi-decadal timescales, the high empirical correlation in raw monthly data is statistically dominated by low-frequency secular drift rather than immediate monthly coupling.
+  2. *Detrending and Differencing Collapse:* When the common quadratic acceleration trend is subtracted, correlation drops from $r = 0.9278$ to **$r = 0.1451$**. When evaluated on month-over-month first differences ($\Delta \text{CO}_2$ vs $\Delta T$), the correlation is **$r = -0.0218$** (effectively zero). Detrending removes the shared multi-decadal signal over which radiative forcing operates, demonstrating that statistical correlation in raw levels is dominated by trend dynamics, though detrending does not disprove physical greenhouse causation.
   3. *Empirical ML Cannot Deduce ECS:* Equilibrium Climate Sensitivity (ECS) represents the multi-century surface warming after doubled $\text{CO}_2$ ($560\text{ ppm}$) once deep-ocean overturning circulation reaches thermal equilibrium ($N \to 0$). Regressions on 67 years of transient historical data conflate transient climate response (TCR), ocean heat uptake, aerosol masking, and internal oscillations. Simulating ECS requires an energy-conserving physical model (such as the DOECLIM model developed in Phase 7).
 
 ---

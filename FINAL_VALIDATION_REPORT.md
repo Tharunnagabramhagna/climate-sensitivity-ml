@@ -37,7 +37,7 @@ All empirical machine learning pipelines, inference utilities, physical simulati
 |   • Paired Observation Count (N)      | 814 months            | 814 months            | VERIFIED (Zero Missing) |
 |   • Raw Pearson Correlation (r)       | +0.9278               | +0.9278               | VERIFIED (Exact Match)  |
 |   • Raw Coefficient of Determination  | 0.8608                | 0.8608                | VERIFIED (Exact Match)  |
-|   • Quadratically Detrended r         | +0.1451               | +0.1451               | VERIFIED (Drift Proven) |
+|   • Quadratically Detrended r         | +0.1451               | +0.1451               | VERIFIED (Trend Dominated)|
 |   • First-Differenced r (ΔCO₂ vs ΔT)  | -0.0218               | -0.0218               | VERIFIED (Zero Monthly) |
 | Physical DOECLIM SCM Simulation:      |                       |                       |                         |
 |   • Energy Conservation Relative Error| < 1e-10 %             | 5.45e-13 %            | VERIFIED (Machine Prec.)|
@@ -110,11 +110,11 @@ All six presentation figures in `modeling_outputs/faculty_graphs/` were independ
 3. **`03_prediction_residuals_timeline.png` (.pdf):**
    - Plots prediction residuals over time with zero-reference baseline.
    - Shows mean bias ($\mu_e = +0.0310^\circ\text{C}$), $\pm 1\sigma$ band ($0.1085^\circ\text{C}$), and $\pm 2\sigma$ band ($0.2170^\circ\text{C}$).
-   - Durbin-Watson diagnostic $d = 1.621$ confirms minimal residual autocorrelation.
+   - Durbin-Watson diagnostic $d = 1.526$ indicates modest positive first-order autocorrelation (and lag-12 seasonal persistence ACF = +0.274), substantially reduced from raw temperatures ($d_{\text{raw}} = 0.43$).
 4. **`04_residual_distribution_kde.png` (.pdf):**
    - Plots normalized residual histogram, empirical KDE curve, and theoretical Gaussian reference.
    - Confirms near-zero skewness ($+0.230$) and mesokurtic kurtosis ($-0.070$).
-   - Shapiro-Wilk test ($p = 0.428$) confirms normality of test residuals.
+   - Shapiro-Wilk test ($W = 0.9925$, $p = 0.769$) fails to reject the null hypothesis of normality at the 5% level, showing consistency with Gaussian error behavior (though failure to reject does not mathematically prove normality).
 5. **`05_recursive_forecast_vs_actual.png` (.pdf):**
    - Contrasts 10-year autonomous recursive rollout (Protocol B, $R^2 = +0.1555$) against 1-step teacher forcing (Protocol A, $R^2 = +0.6532$) and Naive Persistence ($R^2 = -0.6517$).
    - Clearly documents recursive error accumulation and variance damping.

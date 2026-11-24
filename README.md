@@ -25,7 +25,7 @@ flowchart LR
 ### Major Findings:
 1. **The Spurious Correlation Trap (Granger–Newbold Risk):**
    - The raw bivariate correlation between $\text{CO}_2$ concentration and global temperature anomaly is deceptively high (**$r = 0.9278$**, $\rho = 0.9227$).
-   - Systematic detrending and differencing proves this is driven by a shared, non-stationary multi-decadal upward secular drift.
+   - Systematic detrending and differencing demonstrates that the high correlation in raw monthly levels is dominated by a shared, non-stationary multi-decadal upward secular drift, illustrating the econometric Granger–Newbold risk in raw-level regressions. However, detrending filters out low-frequency signals and does not disprove the underlying physical greenhouse causation.
    - When quadratic trend acceleration is removed, the correlation drops to **$r = 0.1451$**.
    - Month-over-month first differences ($\Delta \text{CO}_2$ vs $\Delta T$) yield **$r = -0.0218$** (effectively zero).
 2. **Dual-Protocol Evaluation: Teacher-Forced vs. 10-Year Autonomous Recursive Rollout:**
