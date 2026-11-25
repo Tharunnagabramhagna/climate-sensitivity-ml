@@ -21,6 +21,7 @@ Outputs:
 
 import os
 import sys
+import tempfile
 import time
 import numpy as np
 import pandas as pd
@@ -29,7 +30,7 @@ import joblib
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "modeling_outputs", "faculty_graphs")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-os.environ["MPLCONFIGDIR"] = OUTPUT_DIR
+os.environ["MPLCONFIGDIR"] = os.path.join(tempfile.gettempdir(), "matplotlib_climate_ml")
 
 # Set UTF-8 encoding for standard output across Windows consoles
 if hasattr(sys.stdout, 'reconfigure'):
@@ -46,7 +47,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from scipy import stats
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from src.features import build_climate_features, build_step_feature_vector, FEATURE_COLS
+from src.features import build_climate_features, build_step_feature_vector
 
 # Styling setup
 plt.rcParams['font.sans-serif'] = 'DejaVu Sans', 'Arial', 'Helvetica'

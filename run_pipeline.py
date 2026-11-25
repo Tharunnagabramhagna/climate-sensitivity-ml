@@ -25,13 +25,13 @@ if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8')
 
 import argparse
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import Ridge, LinearRegression
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 import xgboost as xgb
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score
-from sklearn.inspection import permutation_importance
 from src.features import build_climate_features, build_step_feature_vector, FEATURE_COLS
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -61,11 +61,7 @@ def run_pipeline():
     df = load_and_prepare_data()
     print(f"Loaded {len(df)} contiguous monthly observations ({df['date'].iloc[0]} to {df['date'].iloc[-1]})")
 
-    feature_cols = [
-        "temp_lag1", "temp_lag2", "temp_lag3", "temp_lag12",
-        "ln_co2_lag1", "co2_diff1", "co2_diff12",
-        "sin_month", "cos_month"
-    ]
+    feature_cols = FEATURE_COLS
 
     # Chronological Split
     train_mask = df["year"] <= 2005
@@ -219,7 +215,6 @@ def run_pipeline():
     print(era_df.to_string(index=False))
 
     # 3. Model Serialization (Joblib)
-    import joblib
     y_rec_ridge = roll_test_recursive(ridge.predict)
     # Validation residual std (tuning-free uncertainty estimate)
     ridge_tr = Ridge(alpha=0.01, random_state=42).fit(X_train, y_train)

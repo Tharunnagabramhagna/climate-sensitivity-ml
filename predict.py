@@ -14,7 +14,7 @@ import sys
 import numpy as np
 import pandas as pd
 import joblib
-from src.features import build_step_feature_vector, FEATURE_COLS
+from src.features import build_step_feature_vector
 
 # Ensure UTF-8 output across Windows consoles
 if hasattr(sys.stdout, 'reconfigure'):

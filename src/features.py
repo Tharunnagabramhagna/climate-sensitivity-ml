@@ -5,7 +5,7 @@ Provides strictly leakage-free autoregressive and exogenous (ARX) feature
 construction across training, prediction, and presentation pipelines.
 """
 
-from typing import List, Tuple, Union
+from typing import List, Union
 import numpy as np
 import pandas as pd
 

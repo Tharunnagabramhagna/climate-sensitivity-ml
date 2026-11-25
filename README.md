@@ -2,7 +2,7 @@
 **Empirical Investigation of Atmospheric $\text{CO}_2$ Radiative Forcing and Global Temperature Anomalies (1958–2025) Coupled with 1D Ocean Diffusion Physical Climate Modeling**
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Pytest: 27 Passed](https://img.shields.io/badge/tests-27%20passed-brightgreen.svg)]()
+[![Pytest: 34 Passed](https://img.shields.io/badge/tests-34%20passed-brightgreen.svg)]()
 [![Status: Complete & Verified](https://img.shields.io/badge/status-complete%20%26%20verified-brightgreen.svg)]()
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)]()
 
@@ -123,18 +123,31 @@ We implemented the **DOECLIM** 1D ocean diffusion energy-balance model matching 
 ## 6. Project Architecture & Complete File Manifest
 
 ```
-ml_model/
+climate_sensitivity_ml/
 │
-├── co2_mm_mlo.csv                      # Raw NOAA GML Mauna Loa CO₂ observations (1958–2026)
-├── gistemp_monthly.csv                 # Raw NASA GISS GISTEMP v4 anomaly observations (1880–2025)
-├── climate_paired.csv                  # Validated paired dataset (1958-03 to 2025-12, 814 months)
+├── main.py                             # Unified CLI master entry point (--all, --gallery, etc.)
+├── generate_all_graphs.py              # Comprehensive 28-concept graph generation suite
+├── run_graph.py                        # Standalone interactive Matplotlib figure launcher (1–6)
 ├── run_pipeline.py                     # Master empirical modeling pipeline (Phases 2–6)
 ├── predict.py                          # Standalone inference & 2026 projection utility
 ├── simulate_hector_2xco2.py            # DOECLIM 500-yr physical simulation engine (Phase 7)
 ├── generate_faculty_graphs.py          # Master publication graph & evaluation generation script
 ├── requirements.txt                    # Pinned project dependencies
 │
-├── tests/                              # Automated test suite (21 pytest cases, 100% pass)
+├── src/                                # Core shared modular package
+│   ├── features.py                     # Centralized leakage-free feature engineering
+│   ├── data_updater.py                 # NASA GISS & NOAA GML official data updater
+│   └── evaluate_2026.py                # Retrospective conditional 2026 evaluation
+│
+├── data/
+│   ├── benchmark/                      # Archived historical benchmark copies
+│   └── updated/                        # Updated official datasets (through 2026)
+│       ├── gistemp_glb_latest.csv      # NASA GISTEMP v4 / Green Decades mirror
+│       ├── co2_mm_mlo_latest.csv       # NOAA GML Mauna Loa CO₂ observations
+│       └── climate_paired_updated.csv  # Verified paired dataset extending into 2026
+│
+├── tests/                              # Automated test suite (34 pytest cases, 100% pass)
+│   ├── test_cli.py                     # CLI argument routing & standalone graph tests
 │   ├── test_data_preprocessing.py      # Data schemas, zero gaps & physical bounds
 │   ├── test_feature_engineering.py     # Lag integrity & leakage prevention
 │   ├── test_model_pipeline.py          # Dual evaluation protocols & persistence hierarchy
@@ -143,6 +156,8 @@ ml_model/
 │
 ├── Documentation/
 │   ├── README.md                       # Master documentation & project summary
+│   ├── OUTPUTS_GUIDE.md                # Complete output manifest & schema dictionary
+│   ├── GRAPH_EXECUTION_GUIDE.md        # Interactive graph & gallery launching guide
 │   ├── SCIENTIFIC_METHODOLOGY.md       # Equations, data provenance, and ML/SCM formulations
 │   ├── MODEL_LIMITATIONS.md            # Comprehensive scientific critique and failure modes
 │   ├── REPRODUCIBILITY_GUIDE.md        # Step-by-step reproduction instructions
@@ -154,12 +169,12 @@ ml_model/
 │   ├── evaluation_protocols_comparison.csv # Protocol A vs B benchmark table
 │   ├── projected_anomalies_2026.csv    # 2026 projection table with 95% CIs
 │   └── faculty_graphs/                 # Faculty presentation suite (300 DPI PNGs & PDFs)
-│       ├── 01_actual_vs_predicted_scatter.png (.pdf)
-│       ├── 02_actual_vs_predicted_timeline.png (.pdf)
-│       ├── 03_prediction_residuals_timeline.png (.pdf)
-│       ├── 04_residual_distribution_kde.png (.pdf)
-│       ├── 05_recursive_forecast_vs_actual.png (.pdf)
-│       ├── 06_historical_co2_vs_temperature.png (.pdf)
+│       ├── 01_actual_vs_predicted_scatter.py (.png, .pdf)
+│       ├── 02_actual_vs_predicted_timeline.py (.png, .pdf)
+│       ├── 03_prediction_residuals_timeline.py (.png, .pdf)
+│       ├── 04_residual_distribution_kde.py (.png, .pdf)
+│       ├── 05_recursive_forecast_vs_actual.py (.png, .pdf)
+│       ├── 06_historical_co2_vs_temperature.py (.png, .pdf)
 │       ├── test_actual_vs_predicted_values.csv
 │       ├── test_residuals.csv
 │       ├── calculated_evaluation_metrics.csv
@@ -194,19 +209,28 @@ pip install -r requirements.txt
 ```
 
 ### 2. Unified Master Execution (`main.py`)
-Run the complete end-to-end research workflow in sequence (trains model, generates predictions, simulates DOECLIM, regenerates all 28 visualizations, and verifies with 27 pytest tests):
+Run the complete end-to-end research workflow in sequence (trains model, generates predictions, simulates DOECLIM, regenerates all 28 visualizations, and verifies with 34 pytest tests):
 ```powershell
 python main.py --all
 ```
 
-### 3. Modular Stage Execution
-Run individual research stages on demand:
+### 3. Modular Stage Execution & Interactive Graph Launchers
+Run individual research stages or interactive visualizations on demand:
 ```powershell
 python main.py --pipeline    # Fit Ridge ARX model, evaluate Protocol A/B, serialize bundle
 python main.py --predict     # Autonomous recursive rollout & 2026 forecast with uncertainty
 python main.py --simulate    # Run DOECLIM 1D ocean heat diffusion simulation under 2xCO2
 python main.py --graphs      # Regenerate and audit all 28 project visualizations (34 files)
-python main.py --test        # Run all 27 automated tests (pytest -v tests/)
+python main.py --gallery     # Launch responsive visual index (GRAPH_INDEX.html) in browser
+python main.py --test        # Run all 34 automated tests (pytest -v tests/)
+
+# Standalone interactive Matplotlib figures (with live zoom, pan, and hover):
+python run_graph.py 1        # Graph 1: Actual vs. Predicted Temperature Anomaly Scatter
+python run_graph.py 2        # Graph 2: Actual vs. Predicted Temperature Timeline (2016–2025)
+python run_graph.py 3        # Graph 3: Prediction Residuals Timeline & Confidence Bands
+python run_graph.py 4        # Graph 4: Residual Distribution (Histogram, KDE & Gaussian)
+python run_graph.py 5        # Graph 5: Recursive Forecast vs. Actual Values (Protocol B)
+python run_graph.py 6        # Graph 6: Historical CO2 vs. Temperature & Granger-Newbold Warning
 ```
 
 ### 4. Interactive Visual Gallery & Documentation

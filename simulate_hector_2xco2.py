@@ -16,11 +16,12 @@ Simulates:
 
 import os
 import sys
+import tempfile
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "hector_outputs")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-os.environ["MPLCONFIGDIR"] = OUTPUT_DIR
+os.environ["MPLCONFIGDIR"] = os.path.join(tempfile.gettempdir(), "matplotlib_climate_ml")
 
 # Set UTF-8 encoding for standard output and error across Windows consoles
 if hasattr(sys.stdout, 'reconfigure'):
@@ -93,7 +94,7 @@ class DOECLIMModel:
         M = np.eye(self.N) - self.dt * A
         self.M_inv = np.linalg.inv(M)
         
-    def run_scenario(self, f_timeseries, n_years=500):
+    def run_scenario(self, f_timeseries, n_years=500, save_diagnostics=True):
         """
         Runs the simulation for n_years under annual forcing f_timeseries.
         If self.dt_years != 1.0, interpolates forcing to internal sub-steps.
@@ -105,12 +106,13 @@ class DOECLIMModel:
         # If dt_years is 1.0, standard 1-to-1 annual loop
         if np.isclose(self.dt_years, 1.0):
             temps = np.zeros(n_years + 1)
-            imbalances = np.zeros(n_years + 1)
-            ohc_zj = np.zeros(n_years + 1)
-            
             temps[0] = T[0]
-            imbalances[0] = f_timeseries[0]
-            ohc_zj[0] = 0.0
+
+            if save_diagnostics:
+                imbalances = np.zeros(n_years + 1)
+                ohc_zj = np.zeros(n_years + 1)
+                imbalances[0] = f_timeseries[0]
+                ohc_zj[0] = 0.0
             
             b = np.zeros(self.N)
             for yr in range(1, n_years + 1):
@@ -119,26 +121,30 @@ class DOECLIMModel:
                 T = self.M_inv @ (T + b)
                 
                 temps[yr] = T[0]
-                # TOA Net Radiative Imbalance: N = F - lambda * T
-                imbalances[yr] = f_val - self.lambda_fb * T[0]
-                # Total ocean heat content: (h_m * T_m + sum(T_d)*dz) * rho_cp * area
-                heat_j = (self.h_m * T[0] + DZ * np.sum(T[1:])) * RHO_CP * OCEAN_AREA
-                ohc_zj[yr] = heat_j / 1e21  # Zettajoules
+                if save_diagnostics:
+                    # TOA Net Radiative Imbalance: N = F - lambda * T
+                    imbalances[yr] = f_val - self.lambda_fb * T[0]
+                    # Total ocean heat content: (h_m * T_m + sum(T_d)*dz) * rho_cp * area
+                    heat_j = (self.h_m * T[0] + DZ * np.sum(T[1:])) * RHO_CP * OCEAN_AREA
+                    ohc_zj[yr] = heat_j / 1e21  # Zettajoules
                 
-            return {
+            out = {
                 "years": np.arange(n_years + 1),
                 "temp": temps,
-                "imbalance": imbalances,
-                "ohc_zj": ohc_zj
             }
+            if save_diagnostics:
+                out["imbalance"] = imbalances
+                out["ohc_zj"] = ohc_zj
+            return out
         else:
             # Sub-annual stepping
             times_internal = np.linspace(0, n_years, n_steps + 1)
             annual_years = np.arange(n_years + 1)
             
             temps_all = [0.0]
-            imbal_all = [f_timeseries[0]]
-            ohc_all = [0.0]
+            if save_diagnostics:
+                imbal_all = [f_timeseries[0]]
+                ohc_all = [0.0]
             
             b = np.zeros(self.N)
             for step in range(1, n_steps + 1):
@@ -147,24 +153,23 @@ class DOECLIMModel:
                 b[0] = (f_val / self.c_m) * self.dt
                 T = self.M_inv @ (T + b)
                 
-                n_toa = f_val - self.lambda_fb * T[0]
-                heat_j = (self.h_m * T[0] + DZ * np.sum(T[1:])) * RHO_CP * OCEAN_AREA
-                
                 temps_all.append(T[0])
-                imbal_all.append(n_toa)
-                ohc_all.append(heat_j / 1e21)
+                if save_diagnostics:
+                    n_toa = f_val - self.lambda_fb * T[0]
+                    heat_j = (self.h_m * T[0] + DZ * np.sum(T[1:])) * RHO_CP * OCEAN_AREA
+                    imbal_all.append(n_toa)
+                    ohc_all.append(heat_j / 1e21)
                 
             # Interpolate to annual points
             temps_ann = np.interp(annual_years, times_internal, temps_all)
-            imbal_ann = np.interp(annual_years, times_internal, imbal_all)
-            ohc_ann = np.interp(annual_years, times_internal, ohc_all)
-            
-            return {
+            out = {
                 "years": annual_years,
                 "temp": temps_ann,
-                "imbalance": imbal_ann,
-                "ohc_zj": ohc_ann
             }
+            if save_diagnostics:
+                out["imbalance"] = np.interp(annual_years, times_internal, imbal_all)
+                out["ohc_zj"] = np.interp(annual_years, times_internal, ohc_all)
+            return out
 
 
 # ---------------------------------------------------------------------------
@@ -350,12 +355,12 @@ def run_hector_simulation():
     
         # abrupt-2xCO2
         f_ab = np.full(501, f2x_samples[i])
-        res = m.run_scenario(f_ab, n_years=500)
+        res = m.run_scenario(f_ab, n_years=500, save_diagnostics=False)
         ensemble_trajectories[i, :] = res["temp"]
     
         # 1pctCO2 TCR at year 70
         f_1p = get_1pct_co2_forcing(70, f2x_samples[i])
-        res_tcr = m.run_scenario(f_1p, n_years=70)
+        res_tcr = m.run_scenario(f_1p, n_years=70, save_diagnostics=False)
         tcr_samples[i] = res_tcr["temp"][70]
 
     print("Ensemble execution complete!")

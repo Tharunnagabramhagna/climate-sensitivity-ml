@@ -15,6 +15,7 @@ from sklearn.ensemble import RandomForestRegressor
 import xgboost as xgb
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score
 from sklearn.inspection import permutation_importance
+from src.features import build_climate_features, FEATURE_COLS
 
 from pathlib import Path
 
@@ -26,31 +27,9 @@ INTERP_DIR = PROJECT_ROOT / "interpretation_outputs"
 INTERP_DIR.mkdir(parents=True, exist_ok=True)
 
 df = pd.read_csv(DATA_FILE, comment="#")
-df["date_dt"] = pd.to_datetime(df["date"])
-df = df.sort_values("date_dt").reset_index(drop=True)
+df_model = build_climate_features(df, dropna=True)
 
-# Feature engineering
-df["target_temp"] = df["temp_anomaly_c"]
-df["temp_lag1"] = df["temp_anomaly_c"].shift(1)
-df["temp_lag2"] = df["temp_anomaly_c"].shift(2)
-df["temp_lag3"] = df["temp_anomaly_c"].shift(3)
-df["temp_lag12"] = df["temp_anomaly_c"].shift(12)
-
-df["co2_lag1"] = df["co2_ppm"].shift(1)
-df["ln_co2_lag1"] = np.log(df["co2_lag1"])
-df["co2_diff1"] = df["co2_ppm"].shift(1) - df["co2_ppm"].shift(2)
-df["co2_diff12"] = df["co2_ppm"].shift(1) - df["co2_ppm"].shift(13)
-
-df["sin_month"] = np.sin(2 * np.pi * df["month"] / 12.0)
-df["cos_month"] = np.cos(2 * np.pi * df["month"] / 12.0)
-
-df_model = df.dropna().reset_index(drop=True)
-
-feature_cols = [
-    "temp_lag1", "temp_lag2", "temp_lag3", "temp_lag12",
-    "ln_co2_lag1", "co2_diff1", "co2_diff12",
-    "sin_month", "cos_month"
-]
+feature_cols = FEATURE_COLS
 
 feature_display_names = [
     "Temp Lag 1 (T_{t-1})", "Temp Lag 2 (T_{t-2})", "Temp Lag 3 (T_{t-3})", "Temp Lag 12 (T_{t-12})",

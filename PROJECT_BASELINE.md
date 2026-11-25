@@ -1,8 +1,8 @@
 # Project Baseline & Technical Checkpoint
 
-**Project:** Investigating Climate Sensitivity Under 2×CO₂  
-**Repository Path:** `c:\Users\bharg\OneDrive\Desktop\ml_model`  
-**Checkpoint Date:** October 31, 2026  
+**Project:** Investigating Climate Sensitivity Under 2×CO₂<br>
+**Repository Path:** `c:\climate_sensitivity_ml`<br>
+**Checkpoint Date:** October 31, 2026<br>
 **Auditor & Mentor:** Senior ML Engineer, Climate Scientist & Scientific Software Developer  
 
 ---
@@ -10,7 +10,7 @@
 ## 1. Baseline State & Backup Confirmation
 
 A complete, immutable backup of the project before beginning technical and scientific improvements has been created at:
-`c:\Users\bharg\OneDrive\Desktop\ml_model\backup_baseline\`
+`c:\climate_sensitivity_ml\backup_baseline\`
 
 ### Verified File & Artifact Inventory
 

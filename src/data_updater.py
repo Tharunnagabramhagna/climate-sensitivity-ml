@@ -16,9 +16,7 @@ import sys
 import time
 import io
 import urllib.request
-import urllib.error
 import pandas as pd
-import numpy as np
 from pathlib import Path
 from typing import Tuple, Dict, Any
 
@@ -241,7 +239,6 @@ def build_updated_paired_dataset() -> Tuple[bool, dict]:
 
 
 if __name__ == "__main__":
-    from typing import Tuple
     success, meta = build_updated_paired_dataset()
     if not success:
         sys.exit(1)

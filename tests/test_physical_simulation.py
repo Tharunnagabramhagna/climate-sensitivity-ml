@@ -101,3 +101,67 @@ def test_doeclim_time_step_convergence():
     check = verify_energy_conservation_and_convergence(n_years=100, verbose=False)
     assert check["diff_05_1"] < 0.01, f"dt=0.5 difference ({check['diff_05_1']:.4f}°C) exceeds 0.01°C"
     assert check["diff_01_1"] < 0.01, f"dt=0.1 difference ({check['diff_01_1']:.4f}°C) exceeds 0.01°C"
+
+
+def test_doeclim_diagnostic_bypass_numerical_equivalence():
+    """
+    Regression test: Verifies that bypassing OHC and TOA imbalance diagnostics
+    (save_diagnostics=False) yields 100% numerically identical temperature trajectories
+    to save_diagnostics=True across both abrupt-2xCO2 and 1pctCO2 scenarios.
+    """
+    model = DOECLIMModel(ecs=3.0, diffusivity=2.3, f_2x=3.93)
+
+    # 1. 100-year abrupt 2xCO2
+    f_abrupt = get_abrupt_2xco2_forcing(n_years=100, f_2x=3.93)
+    res_full = model.run_scenario(f_abrupt, n_years=100, save_diagnostics=True)
+    res_fast = model.run_scenario(f_abrupt, n_years=100, save_diagnostics=False)
+
+    np.testing.assert_array_equal(
+        res_full["temp"], res_fast["temp"],
+        err_msg="Bypassing diagnostics altered surface temperature trajectory under abrupt forcing"
+    )
+
+    # 2. 70-year 1pctCO2 transient forcing
+    f_1pct = get_1pct_co2_forcing(n_years=70, f_2x=3.93)
+    res_tcr_full = model.run_scenario(f_1pct, n_years=70, save_diagnostics=True)
+    res_tcr_fast = model.run_scenario(f_1pct, n_years=70, save_diagnostics=False)
+
+    np.testing.assert_array_equal(
+        res_tcr_full["temp"], res_tcr_fast["temp"],
+        err_msg="Bypassing diagnostics altered surface temperature trajectory under 1pctCO2 forcing"
+    )
+
+    # Diagnostics must be present in full and absent in fast
+    assert "imbalance" in res_full and "ohc_zj" in res_full
+    assert "imbalance" not in res_fast and "ohc_zj" not in res_fast
+
+
+def test_doeclim_diagnostic_bypass_multi_parameter_and_subannual():
+    """
+    Broader Equivalence Regression Test:
+    Verifies that save_diagnostics=False reproduces save_diagnostics=True
+    to machine precision across diverse climate sensitivities, diffusivities,
+    mixed-layer depths, and sub-annual stepping (dt = 0.5 yr).
+    """
+    test_configs = [
+        {"ecs": 1.5, "diffusivity": 1.0, "f_2x": 3.2, "h_m": 50.0, "dt": 1.0},
+        {"ecs": 4.5, "diffusivity": 3.5, "f_2x": 4.5, "h_m": 150.0, "dt": 1.0},
+        {"ecs": 3.0, "diffusivity": 2.3, "f_2x": 3.93, "h_m": 100.0, "dt": 0.5},
+    ]
+
+    for cfg in test_configs:
+        m = DOECLIMModel(
+            ecs=cfg["ecs"],
+            diffusivity=cfg["diffusivity"],
+            f_2x=cfg["f_2x"],
+            mixed_layer_depth=cfg["h_m"],
+            dt_years=cfg["dt"]
+        )
+        f_ab = get_abrupt_2xco2_forcing(n_years=50, f_2x=cfg["f_2x"])
+        r_full = m.run_scenario(f_ab, n_years=50, save_diagnostics=True)
+        r_fast = m.run_scenario(f_ab, n_years=50, save_diagnostics=False)
+
+        np.testing.assert_array_equal(
+            r_full["temp"], r_fast["temp"],
+            err_msg=f"Discrepancy detected in config: {cfg}"
+        )
