@@ -11,7 +11,7 @@ import pandas as pd
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
-from simulate_hector_2xco2 import (
+from src.simulate_hector_2xco2 import (
     DOECLIMModel,
     get_abrupt_2xco2_forcing,
     get_1pct_co2_forcing,

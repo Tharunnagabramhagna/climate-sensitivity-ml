@@ -22,7 +22,8 @@ from typing import Tuple, Dict, Any
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
-BENCHMARK_DIR = DATA_DIR / "benchmark"
+RAW_DIR = DATA_DIR / "raw"
+PROCESSED_DIR = DATA_DIR / "processed"
 UPDATED_DIR = DATA_DIR / "updated"
 
 NASA_GISTEMP_URL = "https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.csv"

@@ -11,7 +11,7 @@ import pandas as pd
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
-from run_pipeline import load_and_prepare_data
+from src.run_pipeline import load_and_prepare_data
 from src.features import build_climate_features, build_step_feature_vector, FEATURE_COLS, TARGET_COL
 
 
@@ -72,7 +72,7 @@ def test_chronological_splits():
 
 def test_centralized_feature_builder_consistency():
     """Verify src.features produces identical output and respects FEATURE_COLS order."""
-    df_raw = pd.read_csv(os.path.join(PROJECT_ROOT, "climate_paired.csv"), comment="#")
+    df_raw = pd.read_csv(os.path.join(PROJECT_ROOT, "data", "processed", "climate_paired.csv"), comment="#")
     df_feat = build_climate_features(df_raw, dropna=True)
     df_pipe = load_and_prepare_data()
 

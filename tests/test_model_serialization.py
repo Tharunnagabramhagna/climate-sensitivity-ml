@@ -12,7 +12,7 @@ import joblib
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
-from predict import load_model, predict_from_features, compute_prediction_intervals
+from src.predict import load_model, predict_from_features, compute_prediction_intervals
 
 MODEL_PATH = os.path.join(PROJECT_ROOT, "modeling_outputs", "ridge_climate_model.joblib")
 PROJECTIONS_2026_CSV = os.path.join(PROJECT_ROOT, "modeling_outputs", "projected_anomalies_2026.csv")

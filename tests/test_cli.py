@@ -154,7 +154,7 @@ def test_run_graph_launcher_validation():
 
 def test_get_faculty_data_integrity():
     """Verify get_faculty_data loads verified test predictions without re-training."""
-    from generate_faculty_graphs import get_faculty_data
+    from scripts.generate_faculty_graphs import get_faculty_data
     test_df, df_paired = get_faculty_data()
     assert len(test_df) == 120, "Test partition must have exactly 120 months (2016-2025)"
     assert len(df_paired) == 814, "Paired dataset must have 814 months"

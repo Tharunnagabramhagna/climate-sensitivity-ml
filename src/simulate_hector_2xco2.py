@@ -18,7 +18,9 @@ import os
 import sys
 import tempfile
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "hector_outputs")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.environ["MPLCONFIGDIR"] = os.path.join(tempfile.gettempdir(), "matplotlib_climate_ml")
@@ -403,7 +405,7 @@ def run_hector_simulation():
     print("COMPARISON: EMPIRICAL ML MODELS UNDER 2xCO2 (560 PPM)")
     print("=" * 80)
 
-    data_paired = pd.read_csv(os.path.join(PROJECT_ROOT, "climate_paired.csv"), comment="#")
+    data_paired = pd.read_csv(os.path.join(PROJECT_ROOT, "data", "processed", "climate_paired.csv"), comment="#")
     from sklearn.linear_model import Ridge
     from sklearn.ensemble import RandomForestRegressor
 

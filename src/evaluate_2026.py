@@ -26,7 +26,7 @@ MODELING_DIR = BASE_DIR / "modeling_outputs"
 PROJECTIONS_FILE = MODELING_DIR / "projected_anomalies_2026.csv"
 OUTPUT_EVAL_CSV = MODELING_DIR / "forecast_2026_evaluation.csv"
 OUTPUT_EVAL_PLOT = MODELING_DIR / "forecast_2026_vs_actual.png"
-TEMP_RAW_FILE = BASE_DIR / "gistemp_monthly.csv"
+TEMP_RAW_FILE = BASE_DIR / "data" / "raw" / "gistemp_monthly.csv"
 NASA_UPDATED_RAW_FILE = BASE_DIR / "data" / "updated" / "gistemp_glb_latest.csv"
 
 

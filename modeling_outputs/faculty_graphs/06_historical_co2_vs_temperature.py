@@ -30,7 +30,7 @@ if hasattr(sys.stderr, "reconfigure"):
 
 def main():
     try:
-        from generate_faculty_graphs import generate_graph_6, get_faculty_data
+        from scripts.generate_faculty_graphs import generate_graph_6, get_faculty_data
     except ImportError as err:
         print(f"[ERROR] Failed to import project graphing module: {err}", file=sys.stderr)
         print("Ensure you are running from within the climate_sensitivity_ml repository.", file=sys.stderr)

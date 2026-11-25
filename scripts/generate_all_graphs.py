@@ -16,13 +16,13 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Graph Inventory Specification
 GRAPH_GROUPS: Dict[str, Dict] = {
     "Group A: Faculty Presentation Suite": {
         "dir": PROJECT_ROOT / "modeling_outputs" / "faculty_graphs",
-        "script": PROJECT_ROOT / "generate_faculty_graphs.py",
+        "script": PROJECT_ROOT / "scripts" / "generate_faculty_graphs.py",
         "requires_model": True,
         "files": [
             "01_actual_vs_predicted_scatter.png",
@@ -42,7 +42,7 @@ GRAPH_GROUPS: Dict[str, Dict] = {
     },
     "Group B: Physical SCM Simulation Suite": {
         "dir": PROJECT_ROOT / "hector_outputs",
-        "script": PROJECT_ROOT / "simulate_hector_2xco2.py",
+        "script": PROJECT_ROOT / "src" / "simulate_hector_2xco2.py",
         "requires_model": False,
         "files": [
             "01_hector_probabilistic_plume_500yr.png",
@@ -54,7 +54,7 @@ GRAPH_GROUPS: Dict[str, Dict] = {
     },
     "Group C: Exploratory Data Analysis (EDA)": {
         "dir": PROJECT_ROOT / "eda_outputs",
-        "script": PROJECT_ROOT / "scratch_make_plots.py",
+        "script": PROJECT_ROOT / "scripts" / "generate_eda_plots.py",
         "requires_model": False,
         "files": [
             "01_co2_over_time.png",
@@ -72,7 +72,7 @@ GRAPH_GROUPS: Dict[str, Dict] = {
     },
     "Group D: Scientific Interpretation & Attribution": {
         "dir": PROJECT_ROOT / "interpretation_outputs",
-        "script": PROJECT_ROOT / "scratch_interpretation.py",
+        "script": PROJECT_ROOT / "scripts" / "generate_interpretation_plots.py",
         "requires_model": False,
         "files": [
             "01_feature_importance_attribution.png",
@@ -85,8 +85,8 @@ GRAPH_GROUPS: Dict[str, Dict] = {
     "Group E: Model Diagnostics & Baselines": {
         "dir": PROJECT_ROOT / "modeling_outputs",
         "script": [
-            PROJECT_ROOT / "scratch_baseline_model.py",
-            PROJECT_ROOT / "scratch_advanced_models.py",
+            PROJECT_ROOT / "scripts" / "generate_baseline_diagnostics.py",
+            PROJECT_ROOT / "scripts" / "generate_model_comparison.py",
         ],
         "requires_model": False,
         "files": [
@@ -102,7 +102,7 @@ GRAPH_GROUPS: Dict[str, Dict] = {
 
 def check_prerequisites() -> bool:
     """Verifies essential input data and model artifacts exist."""
-    data_file = PROJECT_ROOT / "climate_paired.csv"
+    data_file = PROJECT_ROOT / "data" / "processed" / "climate_paired.csv"
     if not data_file.exists():
         print(f"[ERROR] Required paired climate dataset not found: {data_file}")
         return False
@@ -110,10 +110,10 @@ def check_prerequisites() -> bool:
     model_file = PROJECT_ROOT / "modeling_outputs" / "ridge_climate_model.joblib"
     if not model_file.exists():
         print(f"[WARNING] Serialized model bundle not found: {model_file}")
-        print("          Running 'python run_pipeline.py' to generate model artifact...")
-        res = subprocess.run([sys.executable, str(PROJECT_ROOT / "run_pipeline.py")], cwd=str(PROJECT_ROOT))
+        print("          Running 'python src/run_pipeline.py' to generate model artifact...")
+        res = subprocess.run([sys.executable, str(PROJECT_ROOT / "src" / "run_pipeline.py")], cwd=str(PROJECT_ROOT))
         if res.returncode != 0:
-            print("[ERROR] Failed to execute run_pipeline.py.")
+            print("[ERROR] Failed to execute src/run_pipeline.py.")
             return False
 
     return True

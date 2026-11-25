@@ -25,9 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent
 
 MODELING_DIR = BASE_DIR / "modeling_outputs"
 MODEL_FILE = MODELING_DIR / "ridge_climate_model.joblib"
-DATASET_FILE = BASE_DIR / "climate_paired.csv"
-CO2_FILE = BASE_DIR / "co2_mm_mlo.csv"
-TEMP_FILE = BASE_DIR / "gistemp_monthly.csv"
+DATA_DIR = BASE_DIR / "data"
+DATASET_FILE = DATA_DIR / "processed" / "climate_paired.csv"
+CO2_FILE = DATA_DIR / "raw" / "co2_mm_mlo.csv"
+TEMP_FILE = DATA_DIR / "raw" / "gistemp_monthly.csv"
 
 
 DATASET_METADATA = {
@@ -35,21 +36,21 @@ DATASET_METADATA = {
         "desc": "Chronologically joined monthly dataset merging NOAA CO2 with NASA GISTEMP temperature anomalies (1958-03 to 2025-12).",
         "why": "Central tabular dataset feeding feature engineering pipeline (src/features.py) for all modeling protocols.",
         "url": "Generated internally by joining NOAA GML Mauna Loa CO2 and NASA GISTEMP observations.",
-        "expected_location": "Project root: climate_paired.csv (backup in data/benchmark/climate_paired.csv)",
+        "expected_location": "data/processed/climate_paired.csv",
         "verify": "Contains 814 monthly rows from 1958-03 to 2025-12 with columns: year, month, date, co2_ppm, temp_anomaly_c."
     },
     "co2_mm_mlo.csv": {
         "desc": "NOAA Global Monitoring Laboratory (GML) Mauna Loa monthly mean atmospheric CO2 mole fraction in dry air.",
         "why": "Primary exogenous radiative forcing input for regression models, diff features, and 2026 conditional forecasting.",
         "url": "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.csv",
-        "expected_location": "Project root: co2_mm_mlo.csv (backup in data/benchmark/co2_mm_mlo.csv)",
+        "expected_location": "data/raw/co2_mm_mlo.csv",
         "verify": "Contains comment header lines starting with '#' followed by columns: year, month, decimal date, average, deseasonalized."
     },
     "gistemp_monthly.csv": {
         "desc": "NASA GISS Surface Temperature Analysis (GISTEMP v4) monthly global surface temperature anomaly record.",
         "why": "Primary ground-truth target variable (temp_anomaly_c) relative to the 1951-1980 baseline.",
         "url": "https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.csv",
-        "expected_location": "Project root: gistemp_monthly.csv (backup in data/benchmark/gistemp_monthly.csv)",
+        "expected_location": "data/raw/gistemp_monthly.csv",
         "verify": "Contains monthly temperature anomalies in degrees Celsius. Check for 'GISTEMP' and 'GCAG' source identifiers."
     }
 }
@@ -81,10 +82,10 @@ def check_raw_datasets():
             print(f"  • Verification Check:  {meta.get('verify', 'N/A')}")
 
         print("\nRECOVERY INSTRUCTIONS:")
-        print("  1. If backups exist in data/benchmark/, copy them into the project root.")
-        print("  2. To attempt fetching fresh official observations, run:")
+        print("  1. Restore missing historical benchmark files into data/raw/ and data/processed/ from Git history if deleted.")
+        print("  2. To attempt fetching fresh official observations into data/updated/, run:")
         print("     python main.py --update-data")
-        print("  3. For manual download, follow the official URLs above and save files into the project root.")
+        print("  3. For manual download, follow the official URLs above and save files into data/raw/.")
         print("!" * 78 + "\n")
         return False
     return True
@@ -146,7 +147,7 @@ def run_stage(stage_name, cmd_args, description, check_artifacts_before=None, ch
 def execute_pipeline():
     if not check_raw_datasets():
         return False, 0.0, []
-    cmd = [sys.executable, "run_pipeline.py"]
+    cmd = [sys.executable, str(BASE_DIR / "src" / "run_pipeline.py")]
     outputs = [
         (MODEL_FILE, "Trained Ridge Climate Model Artifact (.joblib)"),
         (MODELING_DIR / "evaluation_protocols_comparison.csv", "Protocol Comparison CSV (Protocol A vs B)"),
@@ -161,7 +162,7 @@ def execute_predict():
     prereqs = [
         (MODEL_FILE, "Trained model missing. Please run 'python main.py --pipeline' first.")
     ]
-    cmd = [sys.executable, "predict.py"]
+    cmd = [sys.executable, str(BASE_DIR / "src" / "predict.py")]
     outputs = [
         (MODELING_DIR / "projected_anomalies_2026.csv", "2026 Projections with Analytical Error Bounds CSV"),
     ]
@@ -196,7 +197,7 @@ def execute_update_data():
 
 
 def execute_simulate():
-    cmd = [sys.executable, "simulate_hector_2xco2.py"]
+    cmd = [sys.executable, str(BASE_DIR / "src" / "simulate_hector_2xco2.py")]
     outputs = [
         (BASE_DIR / "hector_outputs" / "hector_2xco2_ensemble_summary.csv", "DOECLIM 2xCO2 Ensemble Summary CSV"),
         (BASE_DIR / "hector_outputs" / "01_hector_probabilistic_plume_500yr.png", "DOECLIM 500-Yr Simulation Plume PNG"),
@@ -229,7 +230,7 @@ def open_gallery():
 
 
 def execute_graphs(open_gallery_after=False):
-    cmd = [sys.executable, "generate_all_graphs.py"]
+    cmd = [sys.executable, str(BASE_DIR / "scripts" / "generate_all_graphs.py")]
     faculty_dir = MODELING_DIR / "faculty_graphs"
     outputs = [
         (faculty_dir / "01_actual_vs_predicted_scatter.png", "Faculty Fig 1 (Scatter PNG)"),
@@ -332,10 +333,10 @@ Examples:
 """
     )
 
-    parser.add_argument("--pipeline", action="store_true", help="Run full training, validation, testing pipeline (run_pipeline.py)")
-    parser.add_argument("--predict", action="store_true", help="Generate autonomous 10-yr forecast and 2026 projections (predict.py)")
-    parser.add_argument("--simulate", action="store_true", help="Run DOECLIM physical climate simulation (simulate_hector_2xco2.py)")
-    parser.add_argument("--graphs", action="store_true", help="Regenerate all 28 project visualizations (generate_all_graphs.py)")
+    parser.add_argument("--pipeline", action="store_true", help="Run full training, validation, testing pipeline (src/run_pipeline.py)")
+    parser.add_argument("--predict", action="store_true", help="Generate autonomous 10-yr forecast and 2026 projections (src/predict.py)")
+    parser.add_argument("--simulate", action="store_true", help="Run DOECLIM physical climate simulation (src/simulate_hector_2xco2.py)")
+    parser.add_argument("--graphs", action="store_true", help="Regenerate all 28 project visualizations (scripts/generate_all_graphs.py)")
     parser.add_argument("--gallery", action="store_true", help="Open the interactive graph gallery (GRAPH_INDEX.html) in your browser")
     parser.add_argument("--test", action="store_true", help="Run full automated test suite (pytest -v tests/)")
     parser.add_argument("--update-data", action="store_true", help="Fetch latest official NOAA and NASA observations into data/updated/")

@@ -11,6 +11,11 @@ Loads the serialized model bundle saved via Joblib and performs:
 
 import os
 import sys
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 import numpy as np
 import pandas as pd
 import joblib
@@ -22,10 +27,9 @@ if hasattr(sys.stdout, 'reconfigure'):
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8')
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(PROJECT_ROOT, "modeling_outputs", "ridge_climate_model.joblib")
-DATA_FILE = os.path.join(PROJECT_ROOT, "climate_paired.csv")
-CO2_RAW_FILE = os.path.join(PROJECT_ROOT, "co2_mm_mlo.csv")
+DATA_FILE = os.path.join(PROJECT_ROOT, "data", "processed", "climate_paired.csv")
+CO2_RAW_FILE = os.path.join(PROJECT_ROOT, "data", "raw", "co2_mm_mlo.csv")
 OUTPUT_CSV = os.path.join(PROJECT_ROOT, "modeling_outputs", "projected_anomalies_2026.csv")
 
 
@@ -34,7 +38,7 @@ def load_model(path=MODEL_PATH):
     if not os.path.exists(path):
         raise FileNotFoundError(
             f"Model file not found at: {path}\n"
-            "Please run 'python run_pipeline.py' first to train and serialize the model."
+            "Please run 'python main.py --pipeline' first to train and serialize the model."
         )
     return joblib.load(path)
 

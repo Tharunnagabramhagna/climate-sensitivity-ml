@@ -6,6 +6,13 @@ Evaluation on untouched Test period (2016–2025).
 """
 
 import os
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -17,10 +24,7 @@ import xgboost as xgb
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score
 from src.features import build_climate_features, FEATURE_COLS
 
-from pathlib import Path
-
-PROJECT_ROOT = Path(__file__).resolve().parent
-DATA_FILE = PROJECT_ROOT / "climate_paired.csv"
+DATA_FILE = PROJECT_ROOT / "data" / "processed" / "climate_paired.csv"
 if not DATA_FILE.exists():
     raise FileNotFoundError(f"Required dataset not found at: {DATA_FILE}")
 MODELS_DIR = PROJECT_ROOT / "modeling_outputs"

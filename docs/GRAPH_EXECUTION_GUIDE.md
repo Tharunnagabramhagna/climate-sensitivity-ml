@@ -90,10 +90,10 @@ All calculations reuse verified project data and precomputed outputs, ensuring i
 | :--- | :--- | :--- |
 | `01_actual_vs_predicted_scatter.py` | `modeling_outputs/faculty_graphs/test_actual_vs_predicted_values.csv` | `Observed_Temp_Anomaly_C`, `Ridge_1Step_Predicted_C`, $R^2 = 0.6532$, $\text{RMSE} = 0.1124^\circ\text{C}$ |
 | `02_actual_vs_predicted_timeline.py` | `modeling_outputs/faculty_graphs/test_actual_vs_predicted_values.csv` | `date`, `Observed_Temp_Anomaly_C`, `Ridge_1Step_Predicted_C`, Error shading, Surge peak annotations |
-| `03_prediction_residuals_timeline.py` | `modeling_outputs/faculty_graphs/test_actual_vs_predicted_values.csv` | `date`, `Ridge_1Step_Residual_C`, $\mu = +0.0094^\circ\text{C}$, $\sigma = 0.1125^\circ\text{C}$, Durbin-Watson stat |
-| `04_residual_distribution_kde.py` | `modeling_outputs/faculty_graphs/test_actual_vs_predicted_values.csv` | `Ridge_1Step_Residual_C`, Empirical KDE, Normal PDF $N(\mu, \sigma^2)$, Shapiro-Wilk test ($p > 0.05$) |
+| `03_prediction_residuals_timeline.py` | `modeling_outputs/faculty_graphs/test_actual_vs_predicted_values.csv` | `date`, `Ridge_1Step_Residual_C`, $\mu = +0.0310^\circ\text{C}$, $s_{\text{test}} = 0.1085^\circ\text{C}$, Durbin-Watson stat |
+| `04_residual_distribution_kde.py` | `modeling_outputs/faculty_graphs/test_actual_vs_predicted_values.csv` | `Ridge_1Step_Residual_C`, Empirical KDE, Normal PDF $N(\mu, s^2)$, Shapiro-Wilk test ($p > 0.05$) |
 | `05_recursive_forecast_vs_actual.py` | `modeling_outputs/faculty_graphs/test_actual_vs_predicted_values.csv` | `date`, `Observed_Temp_Anomaly_C`, `Ridge_Recursive_Predicted_C`, `Naive_Persistence_Recursive` |
-| `06_historical_co2_vs_temperature.py` | `climate_paired.csv` (814 contiguous monthly records) | `co2_ppm` (NOAA GML), `temp_anomaly_c` (NASA GISS), Pearson $r = 0.9278$, Detrended $r = 0.1451$ |
+| `06_historical_co2_vs_temperature.py` | `data/processed/climate_paired.csv` (814 contiguous monthly records) | `co2_ppm` (NOAA GML), `temp_anomaly_c` (NASA GISS), Pearson $r = 0.9278$, Detrended $r = 0.1451$ |
 
 ---
 

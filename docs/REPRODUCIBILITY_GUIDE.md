@@ -11,7 +11,7 @@
 - **Hardware Resources:**
   - Minimum 4 GB RAM (8 GB recommended for the 5,000-member Monte Carlo ensemble).
   - ~150 MB free disk space (datasets, model bundles, plots, and virtual environment).
-  - Runtime: Total end-to-end execution of all pipelines, simulations, and tests completes in under **60 seconds** on standard modern CPUs.
+  - Runtime: Total end-to-end execution of all pipelines, 5,000-member DOECLIM Monte Carlo simulation, 28 visualizations, and 34 automated tests completes in roughly **4 minutes (~250 seconds)** on standard modern CPUs.
 
 ---
 
@@ -59,11 +59,11 @@ python main.py --all
 ```
 
 This master workflow executes all 5 stages sequentially:
-1. `Pipeline`: Model fitting, dual-protocol evaluation, artifact serialization (`run_pipeline.py`)
-2. `Predict`: 2026 conditional forecasts under observed CO₂ forcing and recursive rollout intervals (`predict.py`)
-3. `Simulate`: DOECLIM 1D ocean heat diffusion physical simulation under 2×CO₂ (`simulate_hector_2xco2.py`)
-4. `Graphs`: Master generation of all 28 project visualizations across 34 files (`generate_all_graphs.py`)
-5. `Test`: Automated test suite with 27 unit, physics, and CLI test cases (`pytest -v tests/`)
+1. `Pipeline`: Model fitting, dual-protocol evaluation, artifact serialization (`src/run_pipeline.py`)
+2. `Predict`: 2026 conditional forecasts under observed CO₂ forcing and recursive rollout intervals (`src/predict.py`)
+3. `Simulate`: DOECLIM 1D ocean heat diffusion physical simulation under 2×CO₂ (`src/simulate_hector_2xco2.py`)
+4. `Graphs`: Master generation of all 28 project visualizations across 34 files (`scripts/generate_all_graphs.py`)
+5. `Test`: Automated test suite with 34 unit, physics, integration, and CLI test cases (`python -m pytest -v tests/`)
 
 Upon completion, `main.py --all` prints a consolidated execution summary table with elapsed timings and completion status.
 
@@ -79,7 +79,7 @@ flowchart TD
     S2["2. python main.py --predict\n(Load Model Bundle, 2026 Forecasts & Uncertainty)"]
     S3["3. python main.py --simulate\n(Energy Balance Check, 500-Yr SCM & 5k Ensemble)"]
     S4["4. python main.py --graphs\n(Regenerate All 28 Unique Visualizations / 34 Files)"]
-    S5["5. python main.py --test\n(27 Automated Verification Tests)"]
+    S5["5. python main.py --test\n(34 Automated Verification Tests)"]
 
     S1 --> S2 --> S3 --> S4 --> S5
 ```
@@ -90,7 +90,8 @@ python main.py --pipeline    # Train Ridge ARX & evaluate Protocol A/B
 python main.py --predict     # 2026 projections & error bounds
 python main.py --simulate    # Physical 1D ocean heat diffusion simulation
 python main.py --graphs      # Generate and verify all 28 visualizations
-python main.py --test        # Run all 27 automated tests
+python main.py --gallery     # Open GRAPH_INDEX.html in default browser
+python main.py --test        # Run all 34 automated tests
 ```
 
 ---
@@ -100,27 +101,26 @@ python main.py --test        # Run all 27 automated tests
 To view the complete gallery of all 28 project visualizations (including high-resolution PNGs and vector PDFs), open the included offline HTML viewer in your web browser:
 
 ```powershell
-start GRAPH_INDEX.html
+python main.py --gallery
 ```
 
-For complete documentation of all tabular datasets, model schemas, and graph descriptions, consult `OUTPUTS_GUIDE.md`.
+For complete documentation of all tabular datasets, model schemas, and graph descriptions, consult `docs/OUTPUTS_GUIDE.md`.
 
 ---
 
-#### Step 3.1: Execute Empirical Modeling Pipeline (`run_pipeline.py`)
+#### Step 3.1: Execute Empirical Modeling Pipeline (`src/run_pipeline.py`)
 
 ```bash
-python run_pipeline.py
+python src/run_pipeline.py
 ```
 
 **What This Step Does:**
-1. Loads and validates raw archives (`co2_mm_mlo.csv` and `gistemp_monthly.csv`).
-2. Constructs the 814-month paired ground-truth dataset (`climate_paired.csv`).
-3. Computes 9 anti-leakage features over 801 valid months (1959-04 to 2025-12).
-4. Fits and tunes models on Training (1959–2005) and Validation (2006–2015) sets.
-5. Evaluates both **Protocol A (1-step teacher forced)** and **Protocol B (10-year recursive rollout)** on the untouched 2016–2025 test window.
-6. Serializes the best-performing model bundle to `modeling_outputs/ridge_climate_model.joblib`.
-7. Saves the comparison table to `modeling_outputs/evaluation_protocols_comparison.csv`.
+1. Loads and validates the paired dataset (`data/processed/climate_paired.csv`, derived from `data/raw/co2_mm_mlo.csv` and `data/raw/gistemp_monthly.csv`).
+2. Computes 9 anti-leakage features over 801 valid months (1959-04 to 2025-12).
+3. Fits and tunes models on Training (1959–2005) and Validation (2006–2015) sets.
+4. Evaluates both **Protocol A (1-step teacher forced)** and **Protocol B (10-year recursive rollout)** on the untouched 2016–2025 test window.
+5. Serializes the best-performing model bundle to `modeling_outputs/ridge_climate_model.joblib`.
+6. Saves the comparison table to `modeling_outputs/evaluation_protocols_comparison.csv`.
 
 **Expected Terminal Output Snippet:**
 ```
@@ -148,10 +148,10 @@ Comparison saved to: modeling_outputs/evaluation_protocols_comparison.csv
 
 ---
 
-#### Step 3.2: Execute Inference & 2026 Projections (`predict.py`)
+#### Step 3.2: Execute Inference & 2026 Projections (`src/predict.py`)
 
 ```bash
-python predict.py
+python src/predict.py
 ```
 
 **What This Step Does:**
@@ -180,10 +180,10 @@ Projections saved to: modeling_outputs/projected_anomalies_2026.csv
 
 ---
 
-#### Step 3.3: Execute Physical Climate Simulation (`simulate_hector_2xco2.py`)
+#### Step 3.3: Execute Physical Climate Simulation (`src/simulate_hector_2xco2.py`)
 
 ```bash
-python simulate_hector_2xco2.py
+python src/simulate_hector_2xco2.py
 ```
 
 **What This Step Does:**
@@ -268,7 +268,7 @@ After running the workflow, verify that all expected output files exist with non
 
 | Output Artifact Path | Required File | Expected Shape / Content |
 |---|---|---|
-| `climate_paired.csv` | Yes | 814 rows, 4 columns (`year`, `month`, `co2_ppm`, `temp_anomaly_c`) |
+| `data/processed/climate_paired.csv` | Yes | 814 rows, 5 columns (`year`, `month`, `date`, `co2_ppm`, `temp_anomaly_c`) |
 | `modeling_outputs/ridge_climate_model.joblib` | Yes | Serialized Joblib bundle with model, coefs, intercept, metrics |
 | `modeling_outputs/evaluation_protocols_comparison.csv` | Yes | 6 rows, Protocol A vs Protocol B metrics for 3 models |
 | `modeling_outputs/projected_anomalies_2026.csv` | Yes | 9 rows (2026-01 to 2026-09), forecast and 95% CIs |

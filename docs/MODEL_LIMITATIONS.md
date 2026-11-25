@@ -72,7 +72,7 @@ It is fundamentally impossible for empirical ML to simulate multi-century equili
 ### 5. Limitation 4: Prior Uncertainty Forward Propagation vs. Posterior Bayesian Calibration
 
 #### 5.1 Nature of the 5,000-Member SCM Ensemble
-The Phase 7 probabilistic Monte Carlo simulation executed in `simulate_hector_2xco2.py` samples 5,000 parameter vectors from assumed prior probability distributions:
+The Phase 7 probabilistic Monte Carlo simulation executed in `src/simulate_hector_2xco2.py` samples 5,000 parameter vectors from assumed prior probability distributions:
 - $\text{ECS} \sim \text{SkewNormal}(\text{mode} \approx 3.0^\circ\text{C})$
 - $\kappa \sim \text{LogNormal}(\text{median} = 2.3\text{ cm}^2/\text{s})$
 - $F_{2\times} \sim \mathcal{N}(3.93\text{ W/m}^2, 0.40)$
@@ -108,7 +108,7 @@ The empirical ML model uses atmospheric $\text{CO}_2$ as its sole external radia
 
 ### 8. Limitation 7: Physical Meaning of the 2026 Cooling Anomaly Projection
 
-In `predict.py`, the autonomous forecast across 2026 projects monthly anomalies declining from:
+In `src/predict.py`, the autonomous forecast across 2026 projects monthly anomalies declining from:
 $$\hat{T}_{\text{Jan 2026}} = +1.093^\circ\text{C} \quad \longrightarrow \quad \hat{T}_{\text{Sep 2026}} = +0.981^\circ\text{C}$$
 A superficial reading might suggest that the model predicts global cooling or a slowdown in climate change.
 

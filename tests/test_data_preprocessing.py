@@ -9,9 +9,9 @@ import pandas as pd
 import numpy as np
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PAIRED_FILE = os.path.join(PROJECT_ROOT, "climate_paired.csv")
-CO2_RAW = os.path.join(PROJECT_ROOT, "co2_mm_mlo.csv")
-TEMP_RAW = os.path.join(PROJECT_ROOT, "gistemp_monthly.csv")
+PAIRED_FILE = os.path.join(PROJECT_ROOT, "data", "processed", "climate_paired.csv")
+CO2_RAW = os.path.join(PROJECT_ROOT, "data", "raw", "co2_mm_mlo.csv")
+TEMP_RAW = os.path.join(PROJECT_ROOT, "data", "raw", "gistemp_monthly.csv")
 
 
 def test_raw_files_exist():

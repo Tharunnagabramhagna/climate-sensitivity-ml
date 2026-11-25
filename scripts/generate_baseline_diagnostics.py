@@ -14,8 +14,8 @@ from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_sco
 
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-DATA_FILE = PROJECT_ROOT / "climate_paired.csv"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_FILE = PROJECT_ROOT / "data" / "processed" / "climate_paired.csv"
 if not DATA_FILE.exists():
     raise FileNotFoundError(f"Required dataset not found at: {DATA_FILE}")
 MODELS_DIR = PROJECT_ROOT / "modeling_outputs"

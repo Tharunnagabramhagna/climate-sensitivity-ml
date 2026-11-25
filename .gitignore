@@ -22,3 +22,5 @@ fontlist-*.json
 Thumbs.db
 *.tmp
 *.bak
+.tmp_*
+**/.tmp_*

@@ -27,7 +27,9 @@ import numpy as np
 import pandas as pd
 import joblib
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "modeling_outputs", "faculty_graphs")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.environ["MPLCONFIGDIR"] = os.path.join(tempfile.gettempdir(), "matplotlib_climate_ml")
@@ -55,7 +57,7 @@ plt.rcParams['axes.edgecolor'] = '#333333'
 plt.rcParams['axes.linewidth'] = 0.9
 
 MODEL_PATH = os.path.join(PROJECT_ROOT, "modeling_outputs", "ridge_climate_model.joblib")
-DATA_PATH = os.path.join(PROJECT_ROOT, "climate_paired.csv")
+DATA_PATH = os.path.join(PROJECT_ROOT, "data", "processed", "climate_paired.csv")
 
 
 def safe_savefig(fig, file_path, **kwargs):

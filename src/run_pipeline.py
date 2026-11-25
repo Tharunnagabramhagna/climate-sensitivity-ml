@@ -18,6 +18,10 @@ phases:
 import os
 import sys
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 # Ensure UTF-8 output across Windows terminals
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
@@ -34,8 +38,7 @@ import xgboost as xgb
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score
 from src.features import build_climate_features, build_step_feature_vector, FEATURE_COLS
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(PROJECT_ROOT, "climate_paired.csv")
+DATA_FILE = os.path.join(PROJECT_ROOT, "data", "processed", "climate_paired.csv")
 EDA_DIR = os.path.join(PROJECT_ROOT, "eda_outputs")
 MODELS_DIR = os.path.join(PROJECT_ROOT, "modeling_outputs")
 INTERP_DIR = os.path.join(PROJECT_ROOT, "interpretation_outputs")
@@ -271,4 +274,4 @@ if __name__ == "__main__":
     if args.simulate_hector:
         import subprocess
         print("\nLaunching Phase 7 Hector / DOECLIM Physical Simulation...")
-        subprocess.run([sys.executable, os.path.join(PROJECT_ROOT, "simulate_hector_2xco2.py")], check=True)
+        subprocess.run([sys.executable, os.path.join(PROJECT_ROOT, "src", "simulate_hector_2xco2.py")], check=True)

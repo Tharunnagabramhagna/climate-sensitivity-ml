@@ -10,8 +10,8 @@ import pandas as pd
 
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-DATA_FILE = PROJECT_ROOT / "climate_paired.csv"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_FILE = PROJECT_ROOT / "data" / "processed" / "climate_paired.csv"
 if not DATA_FILE.exists():
     raise FileNotFoundError(f"Required dataset not found at: {DATA_FILE}")
 EDA_DIR = PROJECT_ROOT / "eda_outputs"
