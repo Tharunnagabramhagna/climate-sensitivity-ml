@@ -115,3 +115,51 @@ def test_graph_gallery_integrity():
         assert p.exists(), f"Gallery linked artifact does not exist: {link_path}"
         assert p.stat().st_size > 0, f"Gallery linked artifact is empty: {link_path}"
 
+
+def test_standalone_faculty_graph_scripts_exist():
+    """Verify that all six standalone faculty graph scripts exist in modeling_outputs/faculty_graphs/."""
+    faculty_dir = BASE_DIR / "modeling_outputs" / "faculty_graphs"
+    expected_scripts = [
+        "01_actual_vs_predicted_scatter.py",
+        "02_actual_vs_predicted_timeline.py",
+        "03_prediction_residuals_timeline.py",
+        "04_residual_distribution_kde.py",
+        "05_recursive_forecast_vs_actual.py",
+        "06_historical_co2_vs_temperature.py"
+    ]
+    for script_name in expected_scripts:
+        script_file = faculty_dir / script_name
+        assert script_file.exists(), f"Missing standalone script: {script_name}"
+        assert script_file.stat().st_size > 0, f"Empty standalone script: {script_name}"
+
+
+def test_run_graph_launcher_validation():
+    """Verify run_graph.py menu output and invalid argument handling."""
+    # Test invalid option
+    res_invalid = subprocess.run(
+        [sys.executable, "run_graph.py", "99"],
+        cwd=str(BASE_DIR),
+        capture_output=True,
+        text=True
+    )
+    assert res_invalid.returncode != 0
+    assert "Invalid graph selection '99'" in res_invalid.stderr
+
+    # Test menu display
+    import run_graph
+    assert "1" in run_graph.GRAPH_OPTIONS
+    assert "6" in run_graph.GRAPH_OPTIONS
+    assert len(run_graph.GRAPH_OPTIONS) == 6
+
+
+def test_get_faculty_data_integrity():
+    """Verify get_faculty_data loads verified test predictions without re-training."""
+    from generate_faculty_graphs import get_faculty_data
+    test_df, df_paired = get_faculty_data()
+    assert len(test_df) == 120, "Test partition must have exactly 120 months (2016-2025)"
+    assert len(df_paired) == 814, "Paired dataset must have 814 months"
+    assert "Observed_Temp_Anomaly_C" in test_df.columns
+    assert "Ridge_1Step_Predicted_C" in test_df.columns
+    assert "Ridge_Recursive_Predicted_C" in test_df.columns
+
+
