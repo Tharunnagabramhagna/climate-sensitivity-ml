@@ -6,8 +6,6 @@ baseline models (Naive Persistence, Seasonal Persistence), and comparative metri
 
 import os
 import sys
-import pytest
-import numpy as np
 import pandas as pd
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

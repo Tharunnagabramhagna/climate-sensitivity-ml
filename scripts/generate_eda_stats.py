@@ -4,7 +4,6 @@ Generates high-resolution figures and statistical tables.
 """
 
 import os
-import sys
 import numpy as np
 import pandas as pd
 

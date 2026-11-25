@@ -5,10 +5,8 @@ Verifies bundle contents, deserialization, deterministic predictions, and 2026 f
 
 import os
 import sys
-import pytest
 import numpy as np
 import pandas as pd
-import joblib
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)

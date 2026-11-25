@@ -17,7 +17,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import Ridge, LinearRegression
+from sklearn.linear_model import Ridge
 from sklearn.ensemble import RandomForestRegressor
 import xgboost as xgb
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score

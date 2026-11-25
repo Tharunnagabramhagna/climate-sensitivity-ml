@@ -229,8 +229,10 @@ def open_gallery():
     return True
 
 
-def execute_graphs(open_gallery_after=False):
+def execute_graphs(open_gallery_after=False, skip_scm=False):
     cmd = [sys.executable, str(BASE_DIR / "scripts" / "generate_all_graphs.py")]
+    if skip_scm:
+        cmd.append("--skip-scm")
     faculty_dir = MODELING_DIR / "faculty_graphs"
     outputs = [
         (faculty_dir / "01_actual_vs_predicted_scatter.png", "Faculty Fig 1 (Scatter PNG)"),
@@ -275,7 +277,7 @@ def execute_all():
         ("Pipeline", execute_pipeline),
         ("Predict", execute_predict),
         ("Simulate", execute_simulate),
-        ("Graphs", execute_graphs),
+        ("Graphs", lambda: execute_graphs(skip_scm=True)),
         ("Test", execute_test),
     ]
 

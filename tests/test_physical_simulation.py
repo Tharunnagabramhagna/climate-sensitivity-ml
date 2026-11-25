@@ -5,7 +5,6 @@ Verifies energy conservation, numerical stability, time-step convergence, and si
 
 import os
 import sys
-import pytest
 import numpy as np
 import pandas as pd
 

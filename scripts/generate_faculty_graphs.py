@@ -19,6 +19,7 @@ Outputs:
   - GRAPH_INTERPRETATION_REPORT.md
 """
 
+import functools
 import os
 import sys
 import tempfile
@@ -272,6 +273,7 @@ def get_faculty_data():
     return test_df, df_paired
 
 
+@functools.lru_cache(maxsize=1)
 def get_screen_dimensions():
     """Detects primary screen dimensions (width, height) in pixels."""
     try:

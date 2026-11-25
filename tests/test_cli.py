@@ -7,7 +7,6 @@ Tests argument parsing, missing prerequisite handling, and CLI stage definitions
 import sys
 import subprocess
 from pathlib import Path
-import pytest
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -77,7 +76,6 @@ def test_main_cli_gallery(monkeypatch):
 
 def test_graph_gallery_integrity():
     """Verify GRAPH_INDEX.html exists and all referenced 28 images and 34 links exist on disk."""
-    import re
     from html.parser import HTMLParser
 
     gallery_path = BASE_DIR / "GRAPH_INDEX.html"

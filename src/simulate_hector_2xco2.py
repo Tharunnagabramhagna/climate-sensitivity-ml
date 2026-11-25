@@ -408,20 +408,10 @@ def run_hector_simulation():
     data_paired = pd.read_csv(os.path.join(PROJECT_ROOT, "data", "processed", "climate_paired.csv"), comment="#")
     from sklearn.linear_model import Ridge
     from sklearn.ensemble import RandomForestRegressor
+    from src.features import build_climate_features, FEATURE_COLS
 
-    data_paired["temp_lag1"] = data_paired["temp_anomaly_c"].shift(1)
-    data_paired["temp_lag2"] = data_paired["temp_anomaly_c"].shift(2)
-    data_paired["temp_lag3"] = data_paired["temp_anomaly_c"].shift(3)
-    data_paired["temp_lag12"] = data_paired["temp_anomaly_c"].shift(12)
-    data_paired["ln_co2_lag1"] = np.log(data_paired["co2_ppm"].shift(1))
-    data_paired["co2_diff1"] = data_paired["co2_ppm"].shift(1) - data_paired["co2_ppm"].shift(2)
-    data_paired["co2_diff12"] = data_paired["co2_ppm"].shift(1) - data_paired["co2_ppm"].shift(13)
-    data_paired["sin_month"] = np.sin(2 * np.pi * data_paired["month"] / 12.0)
-    data_paired["cos_month"] = np.cos(2 * np.pi * data_paired["month"] / 12.0)
-    d_clean = data_paired.dropna().reset_index(drop=True)
-
-    feat_cols = ["temp_lag1", "temp_lag2", "temp_lag3", "temp_lag12",
-                 "ln_co2_lag1", "co2_diff1", "co2_diff12", "sin_month", "cos_month"]
+    d_clean = build_climate_features(data_paired, dropna=True)
+    feat_cols = FEATURE_COLS
 
     m_ridge = Ridge(alpha=0.01).fit(d_clean[d_clean["year"] <= 2015][feat_cols].values,
                                     d_clean[d_clean["year"] <= 2015]["temp_anomaly_c"].values)

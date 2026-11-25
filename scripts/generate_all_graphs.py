@@ -175,7 +175,7 @@ def launch_gallery() -> bool:
     return True
 
 
-def generate_all_graphs(groups: List[str] = None, open_gallery: bool = False) -> bool:
+def generate_all_graphs(groups: List[str] = None, open_gallery: bool = False, skip_scm: bool = False) -> bool:
     """
     Main orchestration routine.
     Regenerates all visualization groups and audits output files.
@@ -208,19 +208,22 @@ def generate_all_graphs(groups: List[str] = None, open_gallery: bool = False) ->
         # Ensure directory exists
         config["dir"].mkdir(parents=True, exist_ok=True)
 
-        # Execute generator script(s)
+        # Execute generator script(s) unless SCM was just generated upstream in --all
         scripts = config["script"] if isinstance(config["script"], list) else [config["script"]]
         group_exec_ok = True
 
-        for s in scripts:
-            print(f"  Executing: {s.name}...", flush=True)
-            ok, msg = execute_script(s)
-            if not ok:
-                print(f"    [FAIL] {msg}", flush=True)
-                group_exec_ok = False
-                all_passed = False
-            else:
-                print(f"    [OK] {msg}", flush=True)
+        if skip_scm and group_name == "Group B: Physical SCM Simulation Suite":
+            print("  [SKIP] Re-using fresh Stage 3 DOECLIM outputs (--skip-scm).", flush=True)
+        else:
+            for s in scripts:
+                print(f"  Executing: {s.name}...", flush=True)
+                ok, msg = execute_script(s)
+                if not ok:
+                    print(f"    [FAIL] {msg}", flush=True)
+                    group_exec_ok = False
+                    all_passed = False
+                else:
+                    print(f"    [OK] {msg}", flush=True)
 
         group_exec_status[group_name] = group_exec_ok
 
@@ -273,8 +276,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate and audit all project visualizations.")
     parser.add_argument("--group", type=str, default=None, help="Target specific group name")
     parser.add_argument("--gallery", "--open", action="store_true", help="Open GRAPH_INDEX.html in browser after generation")
+    parser.add_argument("--skip-scm", action="store_true", help="Skip re-executing DOECLIM SCM (Group B) when already generated")
     cli_args = parser.parse_args()
 
     target_grps = [cli_args.group] if cli_args.group else None
-    success = generate_all_graphs(groups=target_grps, open_gallery=cli_args.gallery)
+    success = generate_all_graphs(groups=target_grps, open_gallery=cli_args.gallery, skip_scm=cli_args.skip_scm)
     sys.exit(0 if success else 1)
