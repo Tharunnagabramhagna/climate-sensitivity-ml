@@ -470,43 +470,76 @@ def run_hector_simulation():
     # PUBLICATION FIGURES
     # ---------------------------------------------------------------------------
     # FIGURE 1: Probabilistic Plume vs Deterministic Benchmarks (abrupt-2xCO2)
-    fig, ax = plt.subplots(figsize=(10, 6), dpi=150)
-    ax.fill_between(years_axis, p5, p95, color="#fed976", alpha=0.5, label="Very Likely Range (5th–95th Percentile)")
-    ax.fill_between(years_axis, p17, p83, color="#feb24c", alpha=0.6, label="Likely Range (17th–83rd Percentile)")
-    ax.plot(years_axis, p50, color="#b10026", linewidth=2.5, label="Physical SCM Median Trajectory (DOECLIM / Hector Framework)")
+    det_central = det_results_abrupt["Central / Best Estimate (ECS=3.0°C, κ=2.3 cm²/s)"]["temp"]
+    det_low = det_results_abrupt["Low Sensitivity (ECS=2.0°C, κ=3.2 cm²/s)"]["temp"]
+    det_high = det_results_abrupt["High Sensitivity (ECS=4.5°C, κ=1.5 cm²/s)"]["temp"]
 
-    ax.plot(years_axis, det_results_abrupt["Central / Best Estimate (ECS=3.0°C, κ=2.3 cm²/s)"]["temp"],
-            color="black", linestyle="--", linewidth=1.8, label="Central Deterministic Run (ECS = 3.0°C)")
-    ax.plot(years_axis, det_results_abrupt["High Sensitivity (ECS=4.5°C, κ=1.5 cm²/s)"]["temp"],
-            color="#800026", linestyle=":", linewidth=1.5, label="High Sensitivity Run (ECS = 4.5°C)")
-    ax.plot(years_axis, det_results_abrupt["Low Sensitivity (ECS=2.0°C, κ=3.2 cm²/s)"]["temp"],
-            color="#41b6c4", linestyle=":", linewidth=1.5, label="Low Sensitivity Run (ECS = 2.0°C)")
+    fig, ax = plt.subplots(figsize=(11.0, 6.2), dpi=300)
+    ax.fill_between(years_axis, p5, p95, color="#fed976", alpha=0.5, label="5th–95th Percentile Prior Plume (N = 5,000)")
+    ax.fill_between(years_axis, p17, p83, color="#feb24c", alpha=0.6, label="17th–83rd Percentile Prior Plume")
+    ax.plot(years_axis, p50, color="#b10026", linewidth=2.5,
+            label=f"DOECLIM Ensemble Median (Year 500: {p50[500]:.2f} °C)", zorder=4)
 
-    ax.axhline(1.5, color="gray", linestyle="-.", linewidth=0.8, alpha=0.7)
-    ax.text(505, 1.5, "1.5°C Target", va="center", fontsize=8.5, color="gray")
-    ax.axhline(2.0, color="gray", linestyle="-.", linewidth=0.8, alpha=0.7)
-    ax.text(505, 2.0, "2.0°C Target", va="center", fontsize=8.5, color="gray")
+    ax.plot(years_axis, det_central, color="black", linestyle="--", linewidth=1.8,
+            label=f"Central Run (Assumed ECS = 3.0 °C; Year 500: {det_central[500]:.2f} °C)", zorder=5)
+    ax.plot(years_axis, det_high, color="#800026", linestyle=":", linewidth=1.5,
+            label=f"High Run (Assumed ECS = 4.5 °C; Year 500: {det_high[500]:.2f} °C)", zorder=3)
+    ax.plot(years_axis, det_low, color="#41b6c4", linestyle=":", linewidth=1.5,
+            label=f"Low Run (Assumed ECS = 2.0 °C; Year 500: {det_low[500]:.2f} °C)", zorder=3)
 
-    ax.set_title("Future 2×CO₂ Scenario: 500-Year Physical Climate Trajectory (DOECLIM Ocean Diffusion)", fontsize=13, fontweight="bold")
-    ax.set_xlabel("Years Since Instantaneous Doubling (abrupt-2xCO₂: 280 ppm → 560 ppm)")
-    ax.set_ylabel("Global Mean Surface Temperature Anomaly (°C)")
-    ax.set_xlim(0, 500)
-    ax.set_ylim(0, 6.0)
-    ax.grid(True, linestyle="--", alpha=0.6)
-    ax.legend(loc="upper left", framealpha=0.9)
+    # Clearly mark Year 500 simulation milestone
+    ax.axvline(500, color="#4a5568", linestyle="--", linewidth=0.9, alpha=0.5, zorder=2)
+    ax.scatter([500, 500], [p50[500], det_central[500]],
+               color=["#b10026", "black"], s=45, zorder=6, edgecolors="white", linewidths=0.8)
+    ax.annotate(
+        f"Year 500 Results:\n"
+        f"• Ensemble Median: {p50[500]:.2f} °C (5th–95th: [{p5[500]:.2f}, {p95[500]:.2f}] °C)\n"
+        f"• Central Benchmark (ECS=3.0 °C): {det_central[500]:.2f} °C",
+        xy=(500, p50[500]),
+        xytext=(315, 0.72),
+        arrowprops=dict(arrowstyle="->", color="#b10026", lw=1.3, connectionstyle="arc3,rad=0.15"),
+        fontsize=8.5, fontweight="bold",
+        bbox=dict(boxstyle="round,pad=0.35", facecolor="#ffffff", edgecolor="#b10026", alpha=0.95),
+        zorder=7
+    )
 
-    note_box = ("Physical Insight:\n"
-                "• Surface mixed layer responds rapidly in first 10–20 years (~60% of warming).\n"
-                "• Deep ocean diffusion delays full thermal equilibrium by 500+ years.")
-    ax.text(0.48, 0.12, note_box, transform=ax.transAxes, fontsize=8.5,
-            bbox=dict(boxstyle="round", facecolor="#fff9db", edgecolor="#e6b800", alpha=0.9))
+    ax.axhline(1.5, color="gray", linestyle="-.", linewidth=0.8, alpha=0.6)
+    ax.text(505, 1.5, "1.5 °C", va="center", fontsize=8.0, color="#555555",
+            bbox=dict(facecolor="white", alpha=0.85, edgecolor="none", pad=1.0))
+    ax.axhline(2.0, color="gray", linestyle="-.", linewidth=0.8, alpha=0.6)
+    ax.text(505, 2.0, "2.0 °C", va="center", fontsize=8.0, color="#555555",
+            bbox=dict(facecolor="white", alpha=0.85, edgecolor="none", pad=1.0))
 
-    fig.text(0.99, 0.01, "DOECLIM Energy Balance Ensemble (N = 5,000) | Forward Propagation of IPCC AR6 Priors",
+    ax.set_title(
+        "DOECLIM Doubled-CO₂ Experiment (abrupt-2xCO2): 500-Year Global Temperature Response\n"
+        "1D Ocean Diffusion Energy-Balance Simulation (Reference: 280 ppm → 560 ppm, Central F₂ₓ = 3.93 W/m²)",
+        fontsize=11.8, fontweight="bold", pad=10
+    )
+    ax.set_xlabel("Simulation Time (Years Since Instantaneous 2×CO₂ Doubling)", fontsize=10.5, fontweight="bold")
+    ax.set_ylabel("Global Mean Surface Temperature Response (°C)", fontsize=10.5, fontweight="bold")
+    ax.set_xlim(0, 535)
+    ax.set_ylim(0, 5.8)
+    ax.grid(True, linestyle="--", alpha=0.55)
+    ax.legend(loc="upper left", framealpha=0.93, fontsize=8.5)
+
+    note_box = ("Physical Interpretation & Model Scope:\n"
+                "• Mixed layer warms rapidly (yrs 1–20); deep-ocean\n"
+                "  diffusion delays equilibrium beyond Year 500.\n"
+                "• ECS is specified as a prior (median ≈ 3.00 °C),\n"
+                "  not independently estimated by DOECLIM.")
+    ax.text(0.45, 0.965, note_box, transform=ax.transAxes, va="top", fontsize=8.2,
+            bbox=dict(boxstyle="round,pad=0.35", facecolor="#fff9db", edgecolor="#e6b800", alpha=0.94))
+
+    fig.subplots_adjust(bottom=0.14)
+    fig.text(0.99, 0.015, "DOECLIM 1D Ocean Diffusion SCM (N = 5,000 Monte Carlo) | Forward Prior Uncertainty Propagation",
              ha="right", fontsize=8, color="#555555", style="italic")
-    fig1_path = os.path.join(OUTPUT_DIR, "01_hector_probabilistic_plume_500yr.png")
-    fig.savefig(fig1_path)
+    fig1_png = os.path.join(OUTPUT_DIR, "01_hector_probabilistic_plume_500yr.png")
+    fig1_pdf = os.path.join(OUTPUT_DIR, "01_hector_probabilistic_plume_500yr.pdf")
+    fig.savefig(fig1_png, dpi=300, bbox_inches="tight")
+    fig.savefig(fig1_pdf, bbox_inches="tight")
     plt.close(fig)
-    print(f"Generated: {fig1_path}")
+    print(f"Generated: {fig1_png}")
+    print(f"Generated: {fig1_pdf}")
 
     # FIGURE 2: Physical SCM vs Empirical ML Under 2xCO2
     fig, ax = plt.subplots(figsize=(10, 5.5), dpi=150)

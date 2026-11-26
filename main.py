@@ -201,6 +201,7 @@ def execute_simulate():
     outputs = [
         (BASE_DIR / "hector_outputs" / "hector_2xco2_ensemble_summary.csv", "DOECLIM 2xCO2 Ensemble Summary CSV"),
         (BASE_DIR / "hector_outputs" / "01_hector_probabilistic_plume_500yr.png", "DOECLIM 500-Yr Simulation Plume PNG"),
+        (BASE_DIR / "hector_outputs" / "01_hector_probabilistic_plume_500yr.pdf", "DOECLIM 500-Yr Simulation Plume PDF"),
     ]
     return run_stage("DOECLIM Physical Climate Simulation", cmd, "1D Ocean Heat Diffusion & Energy Balance Simulation under 2xCO2", check_artifacts_after=outputs)
 
@@ -251,7 +252,7 @@ def execute_graphs(open_gallery_after=False, skip_scm=False):
     success, elapsed, found_outputs = run_stage(
         "Generate All 28 Project Visualizations",
         cmd,
-        "Regenerate Groups A, B, C, D, E (28 PNGs + 6 PDFs)",
+        "Regenerate Groups A, B, C, D, E (28 PNGs + 7 PDFs)",
         check_artifacts_after=outputs
     )
     if success:
@@ -327,7 +328,7 @@ Examples:
   python main.py --pipeline    Train Ridge ARX model and evaluate Protocol A
   python main.py --predict     Run 10-year autonomous recursive forecast & 2026 predictions
   python main.py --simulate    Run DOECLIM 1D ocean heat diffusion simulation
-  python main.py --graphs      Regenerate all 28 visualizations (34 files)
+  python main.py --graphs      Regenerate all 28 visualizations (35 files)
   python main.py --gallery     Open interactive graph gallery in web browser
   python main.py --test        Run automated pytest suite
   python main.py --update-data Fetch latest official observations (NOAA/NASA)

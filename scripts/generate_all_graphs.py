@@ -46,6 +46,7 @@ GRAPH_GROUPS: Dict[str, Dict] = {
         "requires_model": False,
         "files": [
             "01_hector_probabilistic_plume_500yr.png",
+            "01_hector_probabilistic_plume_500yr.pdf",
             "02_physical_scm_vs_empirical_ml_2xco2.png",
             "03_ocean_heat_and_planetary_imbalance.png",
             "04_transient_climate_response_1pct.png",
@@ -190,7 +191,7 @@ def generate_all_graphs(groups: List[str] = None, open_gallery: bool = False, sk
 
     all_passed = True
     total_unique_expected = 28
-    total_files_expected = 34
+    total_files_expected = 35
     total_files_verified = 0
 
     target_groups = groups or list(GRAPH_GROUPS.keys())

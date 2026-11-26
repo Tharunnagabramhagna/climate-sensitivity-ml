@@ -18,19 +18,30 @@ from src.simulate_hector_2xco2 import (
 )
 
 HECTOR_CSV = os.path.join(PROJECT_ROOT, "hector_outputs", "hector_2xco2_ensemble_summary.csv")
+HECTOR_PLUME_PNG = os.path.join(PROJECT_ROOT, "hector_outputs", "01_hector_probabilistic_plume_500yr.png")
+HECTOR_PLUME_PDF = os.path.join(PROJECT_ROOT, "hector_outputs", "01_hector_probabilistic_plume_500yr.pdf")
 
 
 def test_hector_ensemble_summary_exists():
-    """Verify that Phase 7 simulation summary CSV was generated with correct shape."""
+    """Verify that Phase 7 simulation summary CSV and Year-500 plume PNG/PDF are valid."""
     assert os.path.exists(HECTOR_CSV), f"Missing Hector summary file: {HECTOR_CSV}"
     df = pd.read_csv(HECTOR_CSV)
-    
-    # 501 rows (Year 0 through Year 500)
+
+    # 501 rows (Year 0 through Year 500), finite values without NaNs
     assert len(df) == 501, f"Expected 501 simulation years, got {len(df)}"
+    assert not df.isna().any().any(), "Unexpected NaN values found in DOECLIM summary CSV"
+    assert np.isfinite(df.to_numpy()).all(), "Unexpected infinite values found in DOECLIM summary CSV"
     assert "Year" in df.columns
     assert "Median_Temp" in df.columns
     assert "Deterministic_Central" in df.columns
     assert "ML_Ridge_Roll" in df.columns
+    assert df["Year"].iloc[0] == 0 and df["Year"].iloc[-1] == 500
+    assert df["Median_Temp"].iloc[0] == 0.0
+    assert 2.0 < df["Median_Temp"].iloc[-1] < 3.0, f"Unexpected Year 500 median: {df['Median_Temp'].iloc[-1]}"
+
+    # Publication plume PNG and PDF must exist and be non-empty
+    assert os.path.exists(HECTOR_PLUME_PNG) and os.path.getsize(HECTOR_PLUME_PNG) > 0
+    assert os.path.exists(HECTOR_PLUME_PDF) and os.path.getsize(HECTOR_PLUME_PDF) > 0
 
 
 def test_doeclim_energy_conservation_and_asymptote():

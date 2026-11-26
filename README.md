@@ -113,13 +113,15 @@ To contextualize short-term autocorrelation versus genuine multi-year trend skil
   - Ocean diffusivity $\kappa$: Log-normal (`mean=ln(2.3), sigma=0.30`, clipped `[0.6, 5.0] cm²/s`)
   - $2\times\text{CO}_2$ forcing $F_{2\times}$: Normal (`mean=3.93, sd=0.40`, clipped `[2.8, 5.2] W/m²`)
   - Mixed-layer depth $h_m$: Uniform (`60` to `140 m`)
-- **Simulation Result & Limitations:** Under these assumed parameter priors, median warming reaches **$0.73^\circ\text{C}$ at Year 10**, **$1.58^\circ\text{C}$ at Year 70**, **$1.90^\circ\text{C}$ at Year 150**, and **$\approx 2.32^\circ\text{C}$ at Year 500** (`5th–95th percentile: [1.66°C, 3.14°C]`), remaining below full asymptotic ECS because deep-ocean heat diffusion takes longer than 500 years to fully equilibrate. **This output reflects forward propagation of assumed priors through an idealized 1D box-diffusion model and is not an independently established empirical real-world ECS estimate.**
+- **Simulation Result & Limitations:** Under these assumed parameter priors, median warming reaches **$0.73^\circ\text{C}$ at Year 10**, **$1.58^\circ\text{C}$ at Year 70**, **$1.90^\circ\text{C}$ at Year 150**, and **$\approx 2.32^\circ\text{C}$ at Year 500** (`5th–95th percentile: [1.66°C, 3.14°C]`; Central `ECS=3.0°C` deterministic run reaches `2.38°C`), remaining below full asymptotic ECS because deep-ocean heat diffusion takes longer than 500 years to fully equilibrate. **This output reflects forward propagation of assumed priors through an idealized 1D box-diffusion model and is not an independently established empirical real-world ECS estimate.**
+- **Execution & Outputs:** Run via `python main.py --simulate` or directly with `python src/simulate_hector_2xco2.py`. Saves [`hector_outputs/hector_2xco2_ensemble_summary.csv`](hector_outputs/hector_2xco2_ensemble_summary.csv), the annotated 500-year `abrupt-2xCO2` plume figure ([`PNG`](hector_outputs/01_hector_probabilistic_plume_500yr.png) \| [`PDF`](hector_outputs/01_hector_probabilistic_plume_500yr.pdf)), and companion diagnostics (`02..04.png`).
+- **Contrast vs. Ridge Regression:** Under constant $560\text{ ppm}$ forcing, empirical Ridge Regression lacks deep-ocean thermal capacity and converges to a static fixed point ($+1.92^\circ\text{C}$) within ~18 months, whereas DOECLIM explicitly models energy-conserving vertical ocean heat uptake over 500+ years.
 
 ---
 
 ## 8. Visualization Gallery
 
-All 28 project plots (34 files including vector PDFs) can be browsed offline in [`GRAPH_INDEX.html`](GRAPH_INDEX.html) (`python main.py --gallery`). The six primary faculty presentation visualizations support interactive desktop inspection (`python run_graph.py [1-6]`):
+All 28 project plots (35 files including vector PDFs) can be browsed offline in [`GRAPH_INDEX.html`](GRAPH_INDEX.html) (`python main.py --gallery`). The six primary faculty presentation visualizations support interactive desktop inspection (`python run_graph.py [1-6]`):
 
 | # | Standalone Script | PNG / PDF Outputs | Scientific Purpose |
 | :---: | :--- | :--- | :--- |
@@ -165,7 +167,7 @@ climate_sensitivity_ml/
 │   └── SCIENTIFIC_METHODOLOGY.md               # Mathematical & physical formulations
 │
 ├── eda_outputs/                                # 10 EDA plots + eda_metrics_summary.csv
-├── hector_outputs/                             # 4 DOECLIM plots + hector_2xco2_ensemble_summary.csv
+├── hector_outputs/                             # 4 DOECLIM plots (PNG + Year-500 PDF) & summary CSV
 ├── interpretation_outputs/                     # 4 attribution/era plots + 3 summary CSVs
 │
 ├── modeling_outputs/
@@ -248,7 +250,7 @@ Run project workflows from the repository root using [`main.py`](main.py) or [`r
 | `python main.py --pipeline` | Runs [`src/run_pipeline.py`](src/run_pipeline.py) to train Ridge ($\alpha=0.01$), compute Protocol A/B metrics, and save the `.joblib` bundle. |
 | `python main.py --predict` | Runs [`src/predict.py`](src/predict.py) and [`src/evaluate_2026.py`](src/evaluate_2026.py) to generate 2026 conditional forecasts and evaluate them against observed data. |
 | `python main.py --simulate` | Runs [`src/simulate_hector_2xco2.py`](src/simulate_hector_2xco2.py) to verify DOECLIM energy conservation/convergence and run the 500-year 5,000-member simulation. |
-| `python main.py --graphs` | Runs [`scripts/generate_all_graphs.py`](scripts/generate_all_graphs.py) to regenerate and verify all 28 visualization concepts (34 PNG/PDF files). |
+| `python main.py --graphs` | Runs [`scripts/generate_all_graphs.py`](scripts/generate_all_graphs.py) to regenerate and verify all 28 visualization concepts (35 PNG/PDF files). |
 | `python main.py --gallery` | Opens [`GRAPH_INDEX.html`](GRAPH_INDEX.html) in the default web browser for offline visual inspection. |
 | `python main.py --test` | Executes the automated pytest verification suite (`pytest -v tests/`). |
 | `python run_graph.py 1` | Launches Graph 1 (`01_actual_vs_predicted_scatter.py`) in a native interactive desktop Matplotlib window (accepts `1`–`6`, or omit the number for an interactive menu). |

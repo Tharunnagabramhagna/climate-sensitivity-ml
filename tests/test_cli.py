@@ -101,7 +101,7 @@ def test_graph_gallery_integrity():
     parser.feed(content)
 
     assert len(parser.images) == 28, f"Expected 28 unique gallery images, found {len(parser.images)}"
-    assert len(parser.links) == 34, f"Expected 34 artifact links (28 PNGs + 6 PDFs), found {len(parser.links)}"
+    assert len(parser.links) == 35, f"Expected 35 artifact links (28 PNGs + 7 PDFs), found {len(parser.links)}"
 
     for img_path in parser.images:
         p = BASE_DIR / img_path
